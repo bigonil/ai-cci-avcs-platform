@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+
+  "permissions": {
+    "allow": [
+      "Bash(make:*)",
+      "Bash(docker-compose:*)",
+      "Bash(docker compose:*)",
+      "Bash(uv:*)",
+      "Bash(poetry:*)",
+      "Bash(pytest:*)",
+      "Bash(ruff:*)",
+      "Bash(mypy:*)",
+      "Bash(pnpm:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git branch:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(find:*)",
+      "Bash(tree:*)",
+      "Bash(curl:localhost:*)",
+      "Bash(curl:http://localhost:*)",
+      "Bash(curl:http://127.0.0.1:*)",
+      "Read(./**)",
+      "Write(./services/**)",
+      "Write(./libs/**)",
+      "Write(./frontend/**)",
+      "Write(./scripts/**)",
+      "Write(./tests/**)",
+      "Write(./docs/**)",
+      "Write(./infra/docker/**)",
+      "Write(./.claude/**)",
+      "Write(./README.md)",
+      "Write(./pyproject.toml)",
+      "Write(./Makefile)",
+      "Write(./docker-compose.yml)",
+      "Write(./docker-compose.override.yml.example)",
+      "Write(./.env.example)",
+      "Write(./.gitignore)",
+      "Write(./.ruff.toml)",
+      "Write(./.pre-commit-config.yaml)"
+    ],
+
+    "deny": [
+      "Bash(rm -rf /:*)",
+      "Bash(rm -rf ~:*)",
+      "Bash(rm -rf .git:*)",
+      "Bash(sudo:*)",
+      "Bash(chmod 777:*)",
+
+      "Bash(*mongosh*audit_log*deleteOne*)",
+      "Bash(*mongosh*audit_log*deleteMany*)",
+      "Bash(*mongosh*audit_log*updateOne*)",
+      "Bash(*mongosh*audit_log*updateMany*)",
+      "Bash(*mongosh*audit_log*replaceOne*)",
+      "Bash(*mongosh*audit_log*drop*)",
+      "Bash(*mongo*audit_log*deleteOne*)",
+      "Bash(*mongo*audit_log*drop*)",
+
+      "Write(./.env)",
+      "Write(./.env.local)",
+      "Write(./.env.production)",
+      "Write(./secrets/**)",
+      "Write(./**/credentials.json)",
+      "Write(./**/private_key*)",
+      "Write(./**/*.pem)",
+
+      "Write(./infra/k8s/**)",
+      "Write(./**/helm-chart/**)",
+      "Write(./**/kustomization.yaml)",
+
+      "Bash(*api.openai.com*)",
+
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git rebase -i:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git filter-branch:*)",
+      "Bash(git filter-repo:*)"
+    ],
+
+    "ask": [
+      "Bash(docker-compose down -v)",
+      "Bash(docker volume rm:*)",
+      "Bash(docker system prune:*)",
+      "Bash(mongosh:*)",
+      "Bash(mongodump:*)",
+      "Bash(mongorestore:*)",
+      "Bash(rm:*)",
+      "Bash(mv:*)",
+      "Bash(git push:*)",
+      "Bash(git merge:*)",
+      "Bash(uv lock --upgrade:*)",
+      "Bash(poetry update:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(pip install:*)",
+      "Write(./pyproject.toml)",
+      "Write(./uv.lock)",
+      "Write(./poetry.lock)",
+      "Write(./docker-compose.yml)",
+      "Write(./frontend/package.json)"
+    ]
+  },
+
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/pre-tool-use.mjs",
+            "timeout_ms": 5000
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/post-tool-use.mjs",
+            "timeout_ms": 30000
+          }
+        ]
+      }
+    ]
+  },
+
+  "env": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONUNBUFFERED": "1",
+    "CCI_PROJECT_VERSION": "0.2.0-mvp",
+    "CCI_PROFILE": "development",
+    "CCI_LLM_MODEL": "claude-sonnet-4-6",
+    "CLAUDE_CODE_USE_POWERSHELL_TOOL": "1"
+  }
+}

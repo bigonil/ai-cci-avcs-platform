@@ -1,0 +1,428 @@
+---
+name: cci-frontend-nextjs
+description: Use this skill whenever you create, modify, or debug code under the frontend/ directory of CCI/AVCS — anything involving Next.js 16.2, the App Router, Turbopack, TypeScript, shadcn/ui, Tailwind, TanStack Query, or the typed OpenAPI client that consumes the FastAPI services. Trigger on file paths under frontend/, on file extensions .tsx, .ts in frontend, on imports of next, react, @tanstack/react-query, @radix-ui, lucide-react, on mentions of "App Router", "Turbopack", "PPR", "Partial Prerendering", "AGENTS.md", "next-browser", "shadcn", "Tailwind", "Server Component", "Client Component", "TanStack Query", "openapi-typescript-codegen", "REST client". This skill enforces that the frontend consumes typed REST APIs generated from FastAPI OpenAPI specs, uses shadcn/ui primitives instead of custom components, leverages Next.js 16.2 AI Improvements (AGENTS.md, next-browser CLI, Browser Log Forwarding) in the agent-driven workflow, and never embeds backend logic.
+license: Internal — CCI/AVCS Project
+---
+
+# CCI/AVCS Frontend — Next.js 16.2 + shadcn/ui
+
+Il frontend di CCI/AVCS è **un consumatore REST tipizzato**, non un BFF. La logica di business vive nei servizi FastAPI; l'app frontend mostra dati, raccoglie input, propaga decisioni umane (HITL) al backend.
+
+## Regola architetturale
+
+> **Il frontend non contiene logica di business.** Il backend FastAPI è la source of truth per ogni decisione. L'app Next.js è una *vista* dei dati e una *coda* di input verso le API.
+
+Nessuna Server Action che fa side-effect su DB. Nessun pattern "il frontend chiama l'LLM direttamente". Tutte le chiamate passano per il backend, che applica grounding, audit, HITL.
+
+## Stack obbligatorio
+
+| Componente | Tecnologia | Note |
+|---|---|---|
+| Runtime | Node.js 20 LTS | Stabilità + features moderne |
+| Framework | **Next.js 16.2** | App Router (NON Pages Router), Turbopack bundler **default** dalla v16 |
+| React | **React 19** | Peer dependency obbligatoria di Next.js 16+ |
+| Language | **TypeScript strict** | `strict: true`, `noUncheckedIndexedAccess: true` |
+| Rendering | **Partial Prerendering (PPR)** opt-in | Static shell istantaneo + streaming dinamico per dashboard |
+| Agent tooling | **AGENTS.md** + **next-browser** CLI + Browser Log Forwarding | Vedi sezione "AI-assisted development" sotto |
+| UI primitives | **shadcn/ui** (Radix UI + Tailwind) | Componenti owned-in-repo, non da NPM |
+| Styling | **Tailwind CSS** | Utility-first, no CSS-in-JS |
+| Icons | **lucide-react** | Coerente con shadcn/ui |
+| Data fetching | **@tanstack/react-query** (TanStack Query v5) | Cache, retry, optimistic, NO SWR |
+| API client | **openapi-typescript-codegen** | Generato dagli OpenAPI dei servizi FastAPI |
+| Form handling | **react-hook-form** + **zod** | Validazione tipizzata |
+| Charts | **recharts** | Dashboard di KPI |
+| Package manager | **pnpm** | Lockfile riproducibile, monorepo-friendly |
+| Lint | **ESLint** + **prettier** | Config standard di shadcn |
+| Test | **Vitest** + **Playwright** | Unit + e2e |
+
+**Vietato**:
+- Pages Router (legacy)
+- Material-UI, Chakra, Mantine (incoerenti con shadcn/ui owned-in-repo)
+- SWR (rimpiazzato da TanStack Query)
+- axios (usa il client OpenAPI generato)
+- Server Action che chiamano DB direttamente o LLM
+- styled-components, emotion, CSS modules
+- Aggiunta di shadcn components via NPM packages — vanno **generati nel repo** con `pnpm dlx shadcn-ui@latest add <component>`
+
+## Struttura della cartella `frontend/`
+
+```
+frontend/
+├── app/                              # App Router
+│   ├── layout.tsx                    # root layout (Providers: QueryClient, ThemeProvider)
+│   ├── page.tsx                      # dashboard overview
+│   ├── (auth)/
+│   │   └── login/page.tsx            # OIDC redirect handler
+│   ├── incoherences/
+│   │   ├── page.tsx                  # lista incoerenze (server component → fetch iniziale)
+│   │   ├── [id]/page.tsx             # dettaglio incoerenza
+│   │   └── loading.tsx               # skeleton
+│   ├── hitl/
+│   │   ├── page.tsx                  # queue HITL
+│   │   └── [actionId]/page.tsx       # form approvazione con motivazione
+│   ├── audit/
+│   │   ├── page.tsx                  # audit trail viewer
+│   │   └── verify/page.tsx           # trigger hash chain verification
+│   └── api/                          # SOLO per webhook callback OIDC, nient'altro
+│       └── auth/callback/route.ts
+├── components/
+│   ├── ui/                           # shadcn/ui generated (button, card, dialog, …)
+│   │   ├── button.tsx
+│   │   ├── card.tsx
+│   │   ├── dialog.tsx
+│   │   ├── form.tsx
+│   │   └── ...                       # via `pnpm dlx shadcn-ui add <name>`
+│   ├── incoherence-card.tsx          # composte da primitives shadcn
+│   ├── chunk-citation.tsx
+│   ├── hitl-approval-form.tsx
+│   ├── audit-chain-status.tsx
+│   └── kpi-strip.tsx
+├── lib/
+│   ├── api/                          # generated by openapi-typescript-codegen
+│   │   ├── coherence/                # client tipizzato per coherence-service
+│   │   ├── governance/               # client tipizzato per governance-service
+│   │   ├── retrieval/                # client tipizzato per retrieval-service
+│   │   └── index.ts                  # barrel re-exports
+│   ├── query-client.ts               # TanStack Query setup
+│   ├── auth.ts                       # OIDC token handling
+│   └── utils.ts                      # cn() helper, formatters
+├── hooks/
+│   ├── use-incoherences.ts           # TanStack Query hook
+│   ├── use-hitl-queue.ts
+│   └── use-audit-trail.ts
+├── public/                           # static assets
+├── tests/
+│   ├── unit/                         # Vitest
+│   └── e2e/                          # Playwright
+├── components.json                   # shadcn/ui config
+├── tailwind.config.ts
+├── tsconfig.json                     # strict mode obbligatorio
+├── next.config.mjs
+├── package.json
+└── pnpm-lock.yaml
+```
+
+## Setup iniziale (script di scaffolding)
+
+```bash
+# Eseguito una sola volta nella Fase 1, dalla root del repo
+# Next.js 16.2 = create-next-app più recente, Turbopack opt-in via flag
+pnpm create next-app@latest frontend \
+  --typescript \
+  --tailwind \
+  --app \
+  --eslint \
+  --turbopack \
+  --import-alias "@/*"
+
+cd frontend
+
+# create-next-app v16.2 genera AGENTS.md con docs version-matched per Claude Code.
+# NON RIMUOVERE — è la fonte di verità per gli agenti che lavorano sul frontend.
+test -f AGENTS.md || echo "⚠ AGENTS.md mancante: verificare versione create-next-app"
+
+# Installa next-browser come skill in Claude Code (CLI per ispezionare app running)
+# Esposta come /next-browser una volta installata.
+npx skills add vercel-labs/next-browser
+
+# shadcn/ui init
+pnpm dlx shadcn-ui@latest init
+
+# Componenti base (espandibili nel tempo)
+pnpm dlx shadcn-ui@latest add button card dialog form input label \
+  select badge toast tabs skeleton alert table separator
+
+# Data layer
+pnpm add @tanstack/react-query @tanstack/react-query-devtools
+pnpm add -D openapi-typescript-codegen
+
+# Form + validation
+pnpm add react-hook-form @hookform/resolvers zod
+
+# Charts
+pnpm add recharts
+
+# Test
+pnpm add -D vitest @vitejs/plugin-react jsdom @testing-library/react
+pnpm add -D @playwright/test
+```
+
+## AI-assisted development con Next.js 16.2
+
+Next.js 16.2 introduce tre strumenti per rendere il ciclo agent-driven (Claude Code, Cursor) osservabile e debuggabile dal terminale, senza richiedere screenshot manuali o accesso a un browser GUI. Questa skill **richiede** che siano tutti attivi nel progetto.
+
+### 1. `AGENTS.md` — documentazione version-matched per gli agenti
+
+Generato automaticamente da `create-next-app@latest` (v16.2+), `AGENTS.md` contiene la documentazione di Next.js allineata alla versione esatta del progetto. È il file di prima lettura per Claude Code quando lavora nella cartella `frontend/`.
+
+**Regole**:
+- **Non rimuovere mai** `AGENTS.md`. Se manca, rigenerare con `pnpm dlx create-next-app@latest --agents-md-only` o ripristinare da Git.
+- **Non modificare manualmente**: viene aggiornato dai future `next` upgrade. Aggiunte custom al di sotto del marker `<!-- CUSTOM -->` se proprio necessario.
+- È referenziato implicitamente dal `CLAUDE.md` root del kit — gli agenti lo cercano prima di toccare codice frontend.
+- In review, controllare che la versione citata in `AGENTS.md` corrisponda a `next` in `package.json` (deve coincidere a livello major.minor).
+
+### 2. `next-browser` CLI — DevTools accessibili agli agenti
+
+Skill installata in Claude Code via `npx skills add vercel-labs/next-browser`. Una volta installata, l'agente la richiama con `/next-browser <comando>` e ottiene risultati strutturati senza screenshot.
+
+**Comandi chiave** (eseguiti dall'agente, non dall'umano):
+- `next-browser tree` — albero React con props, hooks, state, source-mapped file locations
+- `next-browser ppr` — identifica static shell vs regioni dinamiche, Suspense boundaries bloccate
+- `next-browser errors` — errori build + runtime dal dev server
+- `next-browser network` — richieste dall'ultima navigazione, incluse Server Actions
+- `next-browser screenshot` — cattura visuale per validazione UX (usabile per audit trail)
+
+Il CLI gestisce un'istanza Chromium con React DevTools pre-caricati. Sessione persistente per query iterative.
+
+**Use case nel ciclo CCI/AVCS**: dopo che il Generator agent produce una bozza di UI per la dashboard di incoerenze, Claude Code può lanciare `next-browser tree` per verificare che ogni componente che mostra dati di compliance abbia la prop `chunkId` collegata alle citazioni del Grounding (vincolo R3 del kit).
+
+### 3. Browser Log Forwarding
+
+Abilitato di default in v16.2: `console.log`, `console.error`, errori di hydration e warning React sono inoltrati al **terminale del dev server**, dove Claude Code li intercetta direttamente.
+
+**Conseguenza pratica**: niente più "prova in browser e fammi vedere lo screenshot dell'errore" — l'agente vede gli stessi log che vedrebbe l'utente in DevTools Console, in tempo reale, e può patchare in autonomia.
+
+**Configurazione**: in `next.config.mjs` (default attivo, qui esplicitato per documentazione):
+
+```javascript
+const config = {
+  experimental: {
+    browserLogForwarding: true,  // default true in 16.2+
+  },
+};
+export default config;
+```
+
+### 4. Performance dev server (motivazione operativa)
+
+Il dev server in 16.2 è **~87% più veloce** all'avvio rispetto a 16.1, con Server Component payload deserialization fino a 350% più veloce e oltre 200 fix di Turbopack. Per un ciclo agent-driven in cui Claude Code edita codice, riavvia, ispeziona — la differenza si compone in ore di lavoro risparmiate al giorno.
+
+### Anti-pattern in regime AI Improvements
+
+- **Disattivare `AGENTS.md`** o sovrascriverlo manualmente — rompe l'allineamento agent ↔ versione e introduce drift documentale silenzioso.
+- **Bypassare `next-browser`** facendo screenshot manuali per ogni bug → spreca cicli, l'umano diventa proxy per cose che la CLI risolve da sola.
+- **Disabilitare Browser Log Forwarding** in dev → l'agente "non vede" e inventa.
+- **Adottare feature `experimental` non documentate qui** senza ADR — `next-browser` Agent DevTools sono experimental, vanno trattate come "ok in dev, non in CI/CD blocker".
+
+## Generazione del client OpenAPI
+
+Il client tipizzato verso ogni servizio FastAPI viene **rigenerato** ad ogni cambio di contratto. Mai scritto a mano.
+
+```json
+// frontend/package.json — script
+"scripts": {
+  "gen:api": "concurrently 'pnpm gen:api:coherence' 'pnpm gen:api:governance' 'pnpm gen:api:retrieval'",
+  "gen:api:coherence":  "openapi --input http://localhost:8003/openapi.json --output ./lib/api/coherence  --client fetch --useUnionTypes",
+  "gen:api:governance": "openapi --input http://localhost:8005/openapi.json --output ./lib/api/governance --client fetch --useUnionTypes",
+  "gen:api:retrieval":  "openapi --input http://localhost:8004/openapi.json --output ./lib/api/retrieval  --client fetch --useUnionTypes"
+}
+```
+
+Esecuzione: `pnpm gen:api` (richiede lo stack `docker-compose up` attivo). I file generati **non si modificano a mano** — sono regenerati ad ogni breaking change del contratto OpenAPI.
+
+## Pattern d'uso di TanStack Query
+
+```typescript
+// frontend/hooks/use-incoherences.ts
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { CoherenceService } from "@/lib/api/coherence";
+import type { Incoherence, IncoherenceFilters } from "@/lib/api/coherence";
+
+export function useIncoherences(filters: IncoherenceFilters) {
+  return useQuery({
+    queryKey: ["incoherences", filters],
+    queryFn: () => CoherenceService.listIncoherences(filters),
+    staleTime: 30_000,        // 30s freshness
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useApproveHitlAction() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: GovernanceService.approveAction,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["hitl-queue"] });
+      qc.invalidateQueries({ queryKey: ["incoherences"] });
+    },
+  });
+}
+```
+
+## Pattern: composizione shadcn invece di componenti custom
+
+```tsx
+// frontend/components/incoherence-card.tsx
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import type { Incoherence } from "@/lib/api/coherence";
+import { ChunkCitation } from "./chunk-citation";
+
+const SEVERITY_VARIANT = {
+  LOW: "secondary",
+  MEDIUM: "outline",
+  HIGH: "default",
+  CRITICAL: "destructive",
+} as const;
+
+export function IncoherenceCard({ incoherence, onSelect }: {
+  incoherence: Incoherence;
+  onSelect: (id: string) => void;
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="font-mono text-sm">{incoherence.rule_id}</CardTitle>
+          <Badge variant={SEVERITY_VARIANT[incoherence.severity]}>
+            {incoherence.severity}
+          </Badge>
+        </div>
+        <CardDescription>{incoherence.description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2 text-sm">
+          <p>Impatto stimato: € {incoherence.impact_eur.toLocaleString("it-IT")}</p>
+          <div className="flex flex-wrap gap-1">
+            {incoherence.evidence_chunks.map((chunkId) => (
+              <ChunkCitation key={chunkId} chunkId={chunkId} />
+            ))}
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => onSelect(incoherence.id)}>
+            Vedi dettaglio
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## Server Component vs Client Component
+
+Regole:
+- **Server Component** (default): fetch iniziale di dati statici/quasi-statici, rendering server-side, niente interattività
+- **Client Component** (`"use client"`): dovunque ci sia stato, event handler, browser API, TanStack Query hooks
+
+Pattern tipico:
+```tsx
+// app/incoherences/page.tsx (Server Component)
+import { Suspense } from "react";
+import { CoherenceService } from "@/lib/api/coherence";
+import { IncoherenceListClient } from "./list-client";
+import { IncoherenceListSkeleton } from "./skeleton";
+
+export default async function IncoherencesPage() {
+  // initial server-side fetch (with auth from cookies)
+  const initialData = await CoherenceService.listIncoherences({ domain: "hera_it" });
+  return (
+    <main className="container py-8">
+      <h1 className="text-3xl font-semibold mb-6">Incoerenze rilevate</h1>
+      <Suspense fallback={<IncoherenceListSkeleton />}>
+        <IncoherenceListClient initialData={initialData} />
+      </Suspense>
+    </main>
+  );
+}
+```
+
+## Authentication
+
+OIDC verso un IdP enterprise (Keycloak / Entra ID). Il frontend riceve un access token JWT che inoltra al backend con header `Authorization: Bearer <token>`. **Mai** logica di authorization nel frontend — il backend valida ogni richiesta.
+
+## Test pattern
+
+```typescript
+// frontend/tests/unit/incoherence-card.test.tsx
+import { describe, it, expect, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { IncoherenceCard } from "@/components/incoherence-card";
+
+describe("IncoherenceCard", () => {
+  const mockIncoherence = {
+    id: "inc-1",
+    rule_id: "HERA-R001",
+    description: "Budget overrun",
+    severity: "HIGH" as const,
+    impact_eur: 200000,
+    evidence_chunks: ["doc-1#chunk-3", "doc-2#chunk-1"],
+  };
+
+  it("renders rule_id and severity badge", () => {
+    render(<IncoherenceCard incoherence={mockIncoherence} onSelect={vi.fn()} />);
+    expect(screen.getByText("HERA-R001")).toBeInTheDocument();
+    expect(screen.getByText("HIGH")).toBeInTheDocument();
+  });
+
+  it("calls onSelect with the incoherence id", async () => {
+    const onSelect = vi.fn();
+    render(<IncoherenceCard incoherence={mockIncoherence} onSelect={onSelect} />);
+    await userEvent.click(screen.getByRole("button", { name: /vedi dettaglio/i }));
+    expect(onSelect).toHaveBeenCalledWith("inc-1");
+  });
+});
+```
+
+## Anti-pattern da rifiutare
+
+| Sintomo | Perché è grave |
+|---|---|
+| Server Action in `app/**/actions.ts` che parla con MongoDB/Neo4j/Anthropic direttamente | Bypassi il backend FastAPI, niente audit, niente HITL, niente grounding |
+| `fetch("https://api.anthropic.com/...")` dal frontend | Espone la API key Anthropic, bypassa il citation enforcer |
+| Componenti UI custom dove esiste un primitivo shadcn equivalente | Frammenta il design system, raddoppia il lavoro di accessibility |
+| Cliente OpenAPI scritto a mano invece di generato | Si disallinea silenziosamente dai contratti FastAPI |
+| `import shadcn-button from "some-npm-package"` | shadcn/ui è owned-in-repo, generato con `shadcn-ui add` |
+| `axios` o `fetch` raw senza wrap in TanStack Query | Perdi caching, retry, dedup automatici |
+| `useState` per dati server-state invece di TanStack Query | Reinventi la cache e la sincronizzazione |
+| Pages Router (`pages/...`) | Stack richiede App Router; mixaggi causano confusione |
+| Logica di authorization (es. controlla ruolo prima di mostrare un button) basata su token decodificato lato client | UI hint OK; ma il backend deve sempre validare. Niente "trust the client" |
+| `console.log` lasciati in produzione | Strutturato logging anche lato client (es. Sentry) |
+| CSS modules, styled-components, emotion | Stack è Tailwind-only |
+| Componenti che dipendono da context globale di business state | Usa TanStack Query come single source of truth per server state |
+
+## Variabili d'ambiente
+
+Configurabili via `.env.local` (mai committato), template in `.env.example`:
+
+```bash
+# Backend services (server-side only, no NEXT_PUBLIC_ prefix)
+COHERENCE_SERVICE_URL=http://coherence-service:8003
+GOVERNANCE_SERVICE_URL=http://governance-service:8005
+RETRIEVAL_SERVICE_URL=http://retrieval-service:8004
+
+# OIDC (server-side)
+OIDC_ISSUER=https://keycloak.cci-avcs.local/realms/cci
+OIDC_CLIENT_ID=cci-frontend
+OIDC_CLIENT_SECRET=__from_vault__
+
+# Public (client-exposed — only what's strictly needed)
+NEXT_PUBLIC_APP_NAME="CCI/AVCS"
+NEXT_PUBLIC_ENV=development
+```
+
+**Mai** `NEXT_PUBLIC_ANTHROPIC_API_KEY` o varianti — la chiave LLM vive solo nel backend.
+
+## Definition of Done frontend
+
+- [ ] App esegue `pnpm dev` senza warning TypeScript
+- [ ] `pnpm lint` e `pnpm typecheck` puliti
+- [ ] Coverage Vitest ≥ 70% sui componenti business-critical
+- [ ] Almeno un test Playwright per ogni happy-path principale (4 pagine: dashboard, incoherences, hitl, audit)
+- [ ] Client OpenAPI rigenerato dall'ultimo build dei servizi FastAPI
+- [ ] Tutte le call API passano da TanStack Query
+- [ ] Tutti i componenti UI usano primitive shadcn/ui o le compongono
+- [ ] Nessuna stringa hardcoded di errore — uso di toast con messaggi i18n-ready
+- [ ] Loading state e error state implementati per ogni async UI
+- [ ] Dark mode supportato (shadcn theme tokens)
+- [ ] Build production `pnpm build` produce < 300 KB di JS gzipped sulla home
+
+## Riferimenti
+- Next.js 16.2 App Router: https://nextjs.org/docs/app
+- Next.js 16.2 AI Improvements: https://nextjs.org/blog/next-16-2-ai
+- `next-browser` skill: https://github.com/vercel-labs/next-browser
+- shadcn/ui: https://ui.shadcn.com
+- TanStack Query v5: https://tanstack.com/query/v5
+- openapi-typescript-codegen: https://github.com/ferdikoomen/openapi-typescript-codegen
+- Documento `CCI_AVCS_Technical_Specifications.html`, sezione §06 (Stack tecnologico)
