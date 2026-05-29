@@ -1,0 +1,38 @@
+import type { Incoherence, IncoherenceFilters, VerificationRequest, VerificationResponse } from "./types"
+
+const BASE_URL = process.env.COHERENCE_SERVICE_URL ?? "http://localhost:8003"
+
+async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    headers: { "Content-Type": "application/json" },
+    ...init,
+  })
+  if (!res.ok) {
+    const text = await res.text().catch(() => "")
+    throw new Error(`CoherenceService ${res.status}: ${text}`)
+  }
+  return res.json() as Promise<T>
+}
+
+export const CoherenceService = {
+  listIncoherences(filters?: IncoherenceFilters): Promise<Incoherence[]> {
+    const params = new URLSearchParams()
+    if (filters?.domain) params.set("domain", filters.domain)
+    if (filters?.severity) params.set("severity", filters.severity)
+    if (filters?.limit != null) params.set("limit", String(filters.limit))
+    if (filters?.offset != null) params.set("offset", String(filters.offset))
+    const qs = params.toString()
+    return apiFetch<Incoherence[]>(`/incoherences${qs ? `?${qs}` : ""}`)
+  },
+
+  getIncoherence(id: string): Promise<Incoherence> {
+    return apiFetch<Incoherence>(`/incoherences/${encodeURIComponent(id)}`)
+  },
+
+  triggerVerification(req: VerificationRequest): Promise<VerificationResponse> {
+    return apiFetch<VerificationResponse>("/verify", {
+      method: "POST",
+      body: JSON.stringify(req),
+    })
+  },
+}

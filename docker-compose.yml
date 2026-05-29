@@ -292,6 +292,35 @@ services:
       start_period: 30s
     restart: unless-stopped
 
+  # --- Frontend ---------------------------------------------------------------
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      COHERENCE_SERVICE_URL: http://coherence:8003
+      GOVERNANCE_SERVICE_URL: http://governance:8005
+      NEXT_PUBLIC_APP_NAME: "CCI/AVCS"
+      NEXT_PUBLIC_ENV: production
+    ports:
+      - "3000:3000"
+    networks:
+      - cci-backend
+      - cci-frontend
+    depends_on:
+      coherence:
+        condition: service_healthy
+      governance:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:3000 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
   # --- Observability ----------------------------------------------------------
 
   prometheus:
