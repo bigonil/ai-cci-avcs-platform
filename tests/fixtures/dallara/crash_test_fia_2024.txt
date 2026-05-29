@@ -1,0 +1,24 @@
+FIA INSTITUTE FOR MOTOR SPORT SAFETY
+CRASH TEST CERTIFICATION REPORT
+
+Certificato numero: FIA-CTC-2024-DAL-IR18-003
+Tipo test: frontal + side + rollover + cockpit (full suite)
+Costruttore: Dallara Automobili S.p.A.
+Modello veicolo: IR18 IndyCar
+Standard di riferimento: FIA Technical Regulations 2024 §15
+
+RISULTATI:
+  Test frontale (§15.1):    PASS — 2024-02-10
+  Test laterale (§15.2):    PASS — 2024-02-12
+  Test ribaltamento (§15.3): PASS — 2024-02-14
+  Test abitacolo (§15.4):   PASS — 2024-02-15
+
+VALIDITÀ CERTIFICAZIONE:
+Data emissione: 2024-02-20
+Data inizio validità: 2024-02-20
+Data scadenza: 2025-12-31
+
+NOTA: Il presente certificato copre la struttura del telaio IR18.
+Modifiche alla cellula sopravvivenza richiedono nuova certificazione.
+Le specifiche aerodinamiche 2026 (nuovo kit anteriore) richiedono
+ri-certificazione strutturale entro l'avvio della stagione 2026.

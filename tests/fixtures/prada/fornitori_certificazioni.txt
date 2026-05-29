@@ -1,0 +1,33 @@
+PRADA GROUP — REGISTRO CERTIFICAZIONI FORNITORI TIER 1
+Aggiornamento: 2026-01-31
+
+FORNITORE: Conceria Walpier S.r.l.
+Tier: 1
+Paese: Italia
+Materiale: Pelle conciata al vegetale (Saffiano)
+Stato audit etico: CERTIFIED (SA8000:2014)
+Certificazione materiale:
+  Standard: Leather Working Group (LWG) Gold
+  Numero: LWG-IT-2023-4412
+  Emessa da: LWG Secretariat
+  Valida dal: 2023-11-01
+  Valida al: 2025-10-31
+  NOTA: SCADUTA — Rinnovo in attesa di audit programmato per 2026-03-15
+
+FORNITORE: Manifattura Chiorino S.p.A.
+Tier: 1
+Paese: Italia
+Materiale: Tessuti tecnici interni
+Certificazione materiale:
+  Standard: OEKO-TEX Standard 100
+  Numero: OT-100-IT-2024-9871
+  Valida dal: 2024-06-01
+  Valida al: 2027-05-31
+  Stato: VALIDA
+
+FORNITORE: MBM Manifattura S.r.l.
+Tier: 1
+Paese: Italia
+Materiale: Hardware metallico (chiusure, cerniere)
+Stato audit etico: PENDING (audit programmato 2026-04-10)
+Certificazione: Nessuna certificazione materiale attiva.

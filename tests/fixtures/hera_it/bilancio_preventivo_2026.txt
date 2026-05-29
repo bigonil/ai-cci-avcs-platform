@@ -1,0 +1,18 @@
+HERA GROUP — BILANCIO PREVENTIVO 2026
+Approvato dal Consiglio di Amministrazione in data 2025-11-15
+
+SEZIONE 4 — BUDGET IT E INFRASTRUTTURA CLOUD
+
+Il Consiglio di Amministrazione ha approvato per l'esercizio 2026 un budget
+destinato all'infrastruttura cloud (categoria: Cloud Infrastructure) pari a:
+
+  Importo approvato: 800.000 EUR
+  Categoria: Cloud Infrastructure
+  Anno di riferimento: 2026
+  Approvato da: Consiglio di Amministrazione Hera Group
+  Data approvazione: 2025-11-15
+  Responsabile IT: Direzione DSI
+
+Tale importo comprende i costi di migrazione, licenze cloud e servizi gestiti
+AWS e Azure per l'intero anno 2026.
+Il limite non è incrementabile senza delibera straordinaria del CdA.

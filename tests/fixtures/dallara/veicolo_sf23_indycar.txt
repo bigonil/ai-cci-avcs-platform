@@ -1,0 +1,21 @@
+DALLARA AUTOMOBILI S.p.A. — SCHEDA VEICOLO
+Documento tecnico — Rif. contratto OEM IndyCar 2023-2026
+
+VEICOLO: Dallara IR18 — IndyCar 2026 Spec
+Vehicle ID: DAL-IR18-2026-001
+Model code: IR18
+Campionato: IndyCar
+Cliente (OEM): IndyCar Series LLC
+Anno omologazione: 2018 (rinnovo spec 2026)
+Stato: IN_COMPETITION
+
+SPECIFICHE TECNICHE:
+Telaio: monoscocca in fibra di carbonio
+Motore: cliente (Honda / Chevrolet)
+Peso minimo: 771 kg
+Aerodinamica: kit universale + kit ovale
+
+CONSEGNE CONTRATTO 2026:
+Unità pianificate: 8 nuovi telai
+Consegne effettuate al 2026-02-28: 8 telai
+Stato contratto OEM: ACTIVE

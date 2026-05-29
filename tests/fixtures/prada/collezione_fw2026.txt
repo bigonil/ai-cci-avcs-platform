@@ -1,0 +1,25 @@
+PRADA GROUP — COLLEZIONE FW2026 (AUTUNNO/INVERNO 2026)
+Documento interno — Direzione Prodotto
+
+PRODOTTO: PR-BAG-FW26-001
+Linea: Galleria
+Categoria: handbag
+SKU: 1BA274_2EZZ_F0002
+Stagione: FW2026
+Mercato: EU, USA, Asia
+Stato commerciale: ON_MARKET
+Data lancio EU: 2026-09-15
+Prezzo retail EU: 2.850 EUR
+
+MATERIALI PRINCIPALI:
+- Pelle Saffiano: 65% — Fornitore: Conceria Walpier (IT) — Tier 1
+- Fodere tessuto: 20% — Fornitore: Manifattura Chiorino (IT) — Tier 1
+- Hardware dorato: 15% — Fornitore: MBM Manifattura (IT) — Tier 1
+
+DIGITAL PRODUCT PASSPORT:
+DPP obbligatorio ai sensi del Reg. UE 2024/1781 per prodotti lanciati
+dopo il 2027-01-01. Stato attuale: NON EMESSO.
+
+CARBON FOOTPRINT (stima):
+Scope 1+2 produzione: 8,2 kg CO2e/unità
+Scope 3 supply chain: 31,5 kg CO2e/unità

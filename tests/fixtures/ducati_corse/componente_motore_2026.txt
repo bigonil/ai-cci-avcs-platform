@@ -1,0 +1,20 @@
+DUCATI CORSE S.r.l. — SCHEDA TECNICA COMPONENTE
+Documento riservato — Uso interno
+
+COMPONENTE: DC-ENG-2026-V4-REV3
+Categoria: engine
+Descrizione: Motore Desmosedici V4 — Revisione 3 stagione 2026
+Campionato: MotoGP
+Stagione: 2026
+Stato: IN_RACE
+Riferimento omologazione: FIM-MOTO-2026-ENG-0044
+Development tokens utilizzati: 3
+
+UTILIZZO TOKEN DI SVILUPPO 2026:
+Allocazione FIM totale stagione 2026: 3 token
+Token utilizzati al 2026-03-31: 3 (DC-ENG-2026-V4-REV1, REV2, REV3)
+Token rimanenti: 0
+
+NOTA TECNICA: La revisione REV3 è stata implementata prima del GP del Qatar
+per ottimizzare il consumo di carburante. Il motore è attualmente in uso
+sui due moto ufficiali #1 e #63.

@@ -1,0 +1,22 @@
+HERA GROUP — POLICY FINANZIARIA IT
+Versione 3.0 — Aggiornata il 2026-02-10
+
+ARTICOLO 5 — GESTIONE COMMITMENT CLOUD
+
+5.1 Ogni commitment contrattuale verso provider cloud (AWS, Azure, GCP) deve
+    essere coperto da budget approvato dal CdA per l'anno di riferimento.
+
+5.2 Lo sforamento del budget approvato superiore al 5% richiede approvazione
+    straordinaria del CFO entro 30 giorni dalla rilevazione.
+
+5.3 Il responsabile DSI deve comunicare al CFO ogni impegno contrattuale
+    superiore a 500.000 EUR prima della firma.
+
+ARTICOLO 8 — CERTIFICAZIONI DI SICUREZZA
+
+8.1 La certificazione ISO/IEC 27001 deve essere mantenuta attiva per
+    l'intera durata dei commitment cloud.
+
+8.2 Il mancato rinnovo entro la scadenza certificativa espone Hera Group
+    a rischio contrattuale con i clienti enterprise e a violazione
+    degli SLA di sicurezza definiti nei contratti di fornitura.

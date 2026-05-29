@@ -1,0 +1,21 @@
+SEMSOTEC S.r.l. — REGISTRO CERTIFICAZIONI CE
+
+CERTIFICATO CE — Direttiva Macchine 2006/42/CE
+Prodotto: SEM-VALVE-PRO-3000 (VP3000-SS-DN80)
+Standard di riferimento: EN ISO 4126-1:2013, EN 13480-3:2017
+Organismo notificato: TÜV SÜD Product Service GmbH (NB 0123)
+Numero certificato: TUV-CE-2023-00891
+Data emissione: 2023-06-01
+Data scadenza: 2025-05-31
+
+NOTA: Il certificato TUV-CE-2023-00891 per il prodotto VP3000-SS-DN80 è
+scaduto il 2025-05-31. La richiesta di rinnovo è stata inviata a TÜV SÜD
+in data 2025-04-15. Il nuovo certificato non è ancora stato emesso.
+
+CERTIFICATO CE — Direttiva ATEX 2014/34/UE
+Prodotto: SEM-SENSOR-FLOW-X1
+Standard: EN IEC 60079-0:2018, EN IEC 60079-11:2012
+Numero certificato: ATEX-IMQ-2024-1102
+Data emissione: 2024-05-20
+Data scadenza: 2027-05-20
+Stato: VALIDO

@@ -1,0 +1,22 @@
+AWS ENTERPRISE DISCOUNT PROGRAM — COMMITMENT REPORT Q1 2026
+Hera Group — Account ID: 123456789012
+Report generato: 2026-01-31
+
+RIEPILOGO COMMITMENT CONTRATTUALE
+
+Provider: Amazon Web Services (AWS)
+Tipo contratto: Enterprise Discount Program (EDP)
+Periodo di copertura: 2026-01-01 — 2026-12-31
+Importo commitment annuale: 920.000 EUR
+Commitment mensile medio: 76.667 EUR
+
+DETTAGLIO Q1 2026
+
+  Gennaio 2026:   78.200 EUR (fatturato)
+  Febbraio 2026:  75.400 EUR (fatturato)
+  Marzo 2026:     76.900 EUR (stimato)
+  Totale Q1:     230.500 EUR
+
+NOTE: Il commitment totale annuale di 920.000 EUR è stato concordato con AWS
+nell'ambito del rinnovo contrattuale del 2025-12-01.
+Il contratto prevede penali per mancato utilizzo minimo del 80%.

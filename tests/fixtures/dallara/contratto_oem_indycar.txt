@@ -1,0 +1,27 @@
+CONTRATTO DI FORNITURA OEM — DALLARA / INDYCAR SERIES
+Contratto riservato — ID: DAL-OEM-2023-INDY-001
+
+PARTI:
+Fornitore: Dallara Automobili S.p.A., Varano de' Melegari (PR), Italia
+Cliente: IndyCar Series LLC, Indianapolis, Indiana, USA
+
+OGGETTO: Fornitura telai monoscocca IR18 per campionato IndyCar 2023-2026
+
+TERMINI ECONOMICI:
+Valore totale contratto: 14.500.000 EUR
+Prezzo unitario telaio: 385.000 EUR
+Unità totali: 32 telai (2023-2026)
+
+PERIODO CONTRATTUALE:
+Data inizio: 2023-01-01
+Data fine: 2026-12-31
+Stato: ACTIVE
+
+MILESTONE 2026:
+Q1 2026 — Consegna 8 telai spec 2026: COMPLETATA (2026-02-28)
+Q2 2026 — Supporto tecnico gare: IN CORSO
+Q3 2026 — Aggiornamento kit aerodinamico ovale: PIANIFICATO
+
+CLAUSOLA TECNICA §7.3:
+Tutte le strutture fornite devono essere coperte da certificazione FIA
+crash test valida per l'intera stagione di competizione.

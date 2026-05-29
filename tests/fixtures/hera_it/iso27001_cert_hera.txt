@@ -1,0 +1,22 @@
+CERTIFICATO ISO/IEC 27001:2022
+SISTEMA DI GESTIONE DELLA SICUREZZA DELLE INFORMAZIONI
+
+Ente certificatore: Bureau Veritas Italia S.p.A.
+Numero certificato: IT-ISMS-2024-0892
+
+ORGANIZZAZIONE CERTIFICATA:
+Hera Group S.p.A.
+Sede: Via Rizzoli 8, 40125 Bologna (BO)
+
+SCOPE CERTIFICAZIONE:
+Progettazione, sviluppo e gestione di infrastrutture IT e servizi cloud
+per le business unit: Energy, Water, Waste Management.
+
+VALIDITÀ:
+Data di prima emissione: 2023-04-01
+Data inizio validità corrente: 2024-04-01
+Data scadenza: 2026-03-31
+
+NOTA IMPORTANTE: La certificazione è soggetta a audit di sorveglianza annuale.
+L'audit di sorveglianza 2025 è stato superato con esito positivo in data 2025-03-15.
+Il rinnovo per il ciclo 2026-2029 è previsto entro 2026-03-31.

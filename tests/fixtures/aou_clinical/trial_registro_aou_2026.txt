@@ -1,0 +1,21 @@
+AOU POLICLINICO DI MODENA — REGISTRO SPERIMENTAZIONI CLINICHE 2026
+
+TRIAL ID: AOU-MO-2026-003
+Titolo: Studio di fase II sull'efficacia del trattamento X nei pazienti con
+        patologia Y — Studio prospettico randomizzato controllato
+
+SPONSOR: Fondazione per la Ricerca Biomedica di Modena
+FASE: II
+STATO: ACTIVE
+DATA AVVIO: 2026-01-15
+DATA FINE PREVISTA: 2027-06-30
+PAZIENTI ARRUOLATI: 45 (target: 120)
+
+STRUTTURA RESPONSABILE:
+Unità Operativa di Oncologia Medica
+Direttore: Prof. [REDACTED]
+AOU Policlinico di Modena, Via del Pozzo 71, 41124 Modena
+
+NOTE OPERATIVE:
+Lo studio è attualmente in fase di arruolamento attivo.
+I dati intermedi saranno analizzati dopo 60 pazienti arruolati.

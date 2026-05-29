@@ -1,0 +1,27 @@
+PRADA GROUP — ESG REPORT 2025
+Framework: CSRD / ESRS — GRI Standards
+Pubblicato: 2026-08-15
+Verificato da: PricewaterhouseCoopers S.p.A.
+
+SEZIONE E1 — CAMBIAMENTO CLIMATICO
+
+Emissioni GHG FY 2025 (tonnellate CO2e):
+  Scope 1 (emissioni dirette):         4.820 tCO2e
+  Scope 2 (energia indiretta):        11.340 tCO2e
+  Scope 3 (catena del valore):       847.200 tCO2e
+
+  Scope 3 — dettaglio categorie principali:
+    Cat. 1 (beni e servizi acquistati): 312.400 tCO2e
+    Cat. 4 (trasporto upstream):        89.600 tCO2e
+    Cat. 11 (uso dei prodotti):        245.300 tCO2e
+    Cat. 12 (fine vita prodotti):      124.900 tCO2e
+    Altre categorie:                    75.000 tCO2e
+
+SEZIONE S2 — LAVORATORI NELLA CATENA DEL VALORE
+Numero fornitori tier 1 certificati SA8000 o equivalente: 78%
+Fornitori con audit etico in sospeso: 14 (di cui 3 prioritari)
+Target 2026: 90% fornitori tier 1 con audit completato
+
+NOTA CSRD: Il presente report è redatto in conformità a ESRS 1, ESRS E1,
+ESRS S2. La pubblicazione in data 2026-08-15 rispetta il termine di 8 mesi
+dalla chiusura dell'esercizio (2025-12-31 + 8 mesi = 2026-08-31).

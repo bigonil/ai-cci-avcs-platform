@@ -1,0 +1,23 @@
+SEMSOTEC S.r.l. — CATALOGO PRODOTTI INDUSTRIALI 2026
+Documento interno — Versione 2.1 — 2026-01-08
+
+PRODOTTO: SEM-VALVE-PRO-3000
+Categoria: Valvola di sicurezza industriale
+Codice interno: VP3000-SS-DN80
+Mercato: Unione Europea
+Stato commerciale: ON_MARKET
+Data lancio sul mercato: 2025-03-01
+Volume venduto YTD 2026: 247 unità
+
+DESCRIZIONE TECNICA:
+Valvola di sicurezza in acciaio inox DN80, pressione max 40 bar,
+temperatura operativa -20°C / +250°C. Impiego: impianti chimici, petrolchimici,
+raffinerie. Certificazione richiesta: Direttiva macchine 2006/42/CE.
+
+PRODOTTO: SEM-SENSOR-FLOW-X1
+Categoria: Sensore di flusso per fluidi industriali
+Codice interno: SF-X1-4-20mA
+Mercato: Unione Europea, UK, USA
+Stato commerciale: ON_MARKET
+Data lancio: 2024-06-15
+Volume venduto YTD 2026: 1.842 unità
