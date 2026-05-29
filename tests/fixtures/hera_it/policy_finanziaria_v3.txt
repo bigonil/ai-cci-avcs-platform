@@ -1,22 +1,39 @@
 HERA GROUP — POLICY FINANZIARIA IT
 Versione 3.0 — Aggiornata il 2026-02-10
 
-ARTICOLO 5 — GESTIONE COMMITMENT CLOUD
+ARTICOLO 5 — GESTIONE COMMITMENT CLOUD MULTI-PROVIDER
 
-5.1 Ogni commitment contrattuale verso provider cloud (AWS, Azure, GCP) deve
-    essere coperto da budget approvato dal CdA per l'anno di riferimento.
+5.1 Hera Group adotta una strategia multi-cloud con tre provider:
+    - Azure (Microsoft EA): provider primario per workload enterprise e SAP
+    - AWS (Enterprise Discount Program): provider secondario per data lake e DR
+    - GCP (Committed Use Discount): provider terziario per analytics e AI/ML
 
-5.2 Lo sforamento del budget approvato superiore al 5% richiede approvazione
-    straordinaria del CFO entro 30 giorni dalla rilevazione.
+5.2 Ogni commitment contrattuale verso un provider cloud deve essere coperto
+    da budget allocato specifico per quel provider, approvato dal CTO.
 
-5.3 Il responsabile DSI deve comunicare al CFO ogni impegno contrattuale
-    superiore a 500.000 EUR prima della firma.
+5.3 Il budget totale multi-cloud e' approvato annualmente dal CdA.
+    Le allocazioni per-provider sono deliberate dalla Direzione DSI
+    entro 15 giorni dall'approvazione CdA.
+
+5.4 Lo sforamento dell'allocation di un singolo provider superiore al 5%
+    richiede approvazione del CTO entro 15 giorni dalla rilevazione.
+
+5.5 Lo sforamento del budget totale multi-cloud superiore al 5%
+    richiede approvazione straordinaria del CFO e comunicazione al CdA.
+
+5.6 Nessun singolo provider deve rappresentare piu' del 70% della spesa
+    cloud totale (controllo rischio vendor lock-in — HERA DSI Multi-Cloud §2.3).
 
 ARTICOLO 8 — CERTIFICAZIONI DI SICUREZZA
 
-8.1 La certificazione ISO/IEC 27001 deve essere mantenuta attiva per
-    l'intera durata dei commitment cloud.
+8.1 La certificazione ISO/IEC 27001 deve essere mantenuta attiva e valida
+    per l'intera durata di tutti i commitment cloud attivi (qualsiasi provider).
 
-8.2 Il mancato rinnovo entro la scadenza certificativa espone Hera Group
-    a rischio contrattuale con i clienti enterprise e a violazione
-    degli SLA di sicurezza definiti nei contratti di fornitura.
+8.2 Il mancato rinnovo della certificazione ISO 27001 entro la data di scadenza
+    espone Hera Group a:
+    - Rischio contrattuale con clienti enterprise (clausole SLA sicurezza)
+    - Violazione degli obblighi contrattuali con i provider cloud enterprise
+    - Potenziale non conformita' a requisiti regolatori di settore
+
+8.3 Il processo di rinnovo deve essere avviato almeno 90 giorni prima
+    della scadenza del certificato vigente.

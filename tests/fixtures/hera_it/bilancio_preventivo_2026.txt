@@ -1,18 +1,43 @@
-HERA GROUP — BILANCIO PREVENTIVO 2026
+HERA GROUP — BILANCIO PREVENTIVO IT 2026
 Approvato dal Consiglio di Amministrazione in data 2025-11-15
 
-SEZIONE 4 — BUDGET IT E INFRASTRUTTURA CLOUD
+SEZIONE 4 — BUDGET IT E INFRASTRUTTURA CLOUD MULTI-PROVIDER
 
 Il Consiglio di Amministrazione ha approvato per l'esercizio 2026 un budget
-destinato all'infrastruttura cloud (categoria: Cloud Infrastructure) pari a:
+totale destinato all'infrastruttura cloud pari a:
 
-  Importo approvato: 800.000 EUR
+  BUDGET TOTALE CLOUD APPROVATO 2026: 800.000 EUR
   Categoria: Cloud Infrastructure
   Anno di riferimento: 2026
   Approvato da: Consiglio di Amministrazione Hera Group
   Data approvazione: 2025-11-15
-  Responsabile IT: Direzione DSI
+  Responsabile: Direzione DSI
 
-Tale importo comprende i costi di migrazione, licenze cloud e servizi gestiti
-AWS e Azure per l'intero anno 2026.
+ALLOCAZIONE PER PROVIDER (delibera DSI 2025-11-20):
+
+  Provider Azure (primario — Microsoft EA):
+    Budget allocato: 500.000 EUR
+    Motivazione: migrazione workload ERP, SAP, backup enterprise
+    Approvato da: CTO Hera Group
+    Data approvazione allocazione: 2025-11-20
+
+  Provider AWS (secondario — Enterprise Discount Program):
+    Budget allocato: 200.000 EUR
+    Motivazione: workload data lake, analytics, disaster recovery
+    Approvato da: CTO Hera Group
+    Data approvazione allocazione: 2025-11-20
+
+  Provider GCP (terziario — analytics e AI/ML):
+    Budget allocato: 100.000 EUR
+    Motivazione: BigQuery analytics, Vertex AI, sperimentazione ML
+    Approvato da: CTO Hera Group
+    Data approvazione allocazione: 2025-11-20
+
+  TOTALE ALLOCAZIONI: 800.000 EUR (= budget totale CdA approvato)
+
+NOTA GOVERNANCE:
+Lo sforamento del budget allocato per singolo provider superiore al 5%
+richiede approvazione del CTO entro 15 giorni dalla rilevazione.
+Lo sforamento del budget totale multi-cloud superiore al 5%
+richiede approvazione straordinaria del CFO e comunicazione al CdA.
 Il limite non è incrementabile senza delibera straordinaria del CdA.
