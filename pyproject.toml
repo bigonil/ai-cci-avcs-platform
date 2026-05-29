@@ -84,7 +84,7 @@ markers = [
     "live_llm: tests that call the real Anthropic API (deselect with -m 'not live_llm')",
     "integration: tests requiring real Docker containers via testcontainers",
 ]
-addopts = "-v --tb=short"
+addopts = "-v --tb=short --import-mode=importlib"
 
 [tool.coverage.run]
 source = ["src"]

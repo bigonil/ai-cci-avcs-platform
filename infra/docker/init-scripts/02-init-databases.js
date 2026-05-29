@@ -33,10 +33,28 @@ govDb.grantRolesToUser("cci_audit_writer", [
   { role: "auditLogWriter", db: "cci_governance" },
 ]);
 
-// Indici audit_log
+// Indici audit_log — unique su seq, event_id, record_hash (tre garanzie indipendenti)
 govDb.audit_log.createIndex({ seq: 1 }, { unique: true, name: "audit_log_seq_unique" });
+govDb.audit_log.createIndex({ event_id: 1 }, { unique: true, name: "audit_log_event_id_unique" });
+govDb.audit_log.createIndex({ record_hash: 1 }, { unique: true, name: "audit_log_record_hash_unique" });
 govDb.audit_log.createIndex({ correlation_id: 1 }, { name: "audit_log_correlation_id" });
 govDb.audit_log.createIndex({ ts: 1 }, { name: "audit_log_ts" });
+govDb.audit_log.createIndex({ event_type: 1 }, { name: "audit_log_event_type" });
+
+// Tail singleton per hash chain (unico punto di sincronizzazione atomica)
+govDb.createCollection("audit_log_tail");
+govDb.audit_log_tail.createIndex({ _id: 1 }, { unique: true });
+govDb.audit_log_tail.insertOne({
+  _id: "singleton",
+  last_seq: NumberLong(0),
+  // 32 zero bytes = GENESIS_HASH (base64: A×43 + =)
+  last_hash: BinData(0, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="),
+});
+
+// Indice su hitl_actions
+govDb.createCollection("hitl_actions");
+govDb.hitl_actions.createIndex({ action_id: 1 }, { unique: true, name: "hitl_action_id_unique" });
+govDb.hitl_actions.createIndex({ status: 1, created_at: -1 }, { name: "hitl_status_ts" });
 
 // Collection LangGraph checkpoints
 govDb.createCollection("langgraph_checkpoints");

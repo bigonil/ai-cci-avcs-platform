@@ -239,6 +239,30 @@ services:
       start_period: 60s
     restart: unless-stopped
 
+  governance:
+    build:
+      context: .
+      dockerfile: services/governance/Dockerfile
+    environment:
+      MONGODB_AUDIT_URI: mongodb://cci_audit_writer:${MONGODB_AUDIT_WRITER_PASSWORD:-changeme_audit}@mongodb:27017/cci_governance?authSource=cci_governance
+      CCI_GOVERNANCE_DB: cci_governance
+      CCI_GOVERNANCE_PORT: 8005
+      CCI_AUDIT_ACTOR: governance-service
+    ports:
+      - "8005:8005"
+    networks:
+      - cci-backend
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8005/health/live || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
   coherence:
     build:
       context: .
