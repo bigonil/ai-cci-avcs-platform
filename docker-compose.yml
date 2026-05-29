@@ -103,6 +103,73 @@ services:
       retries: 5
     restart: unless-stopped
 
+  # --- CCI Services -----------------------------------------------------------
+
+  ingestion:
+    build:
+      context: .
+      dockerfile: services/ingestion/Dockerfile
+    environment:
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: 6333
+      REDIS_URL: redis://redis:6379/0
+      CCI_INGESTION_PORT: 8000
+    ports:
+      - "8000:8000"
+    networks:
+      - cci-backend
+    depends_on:
+      qdrant:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./docs/ontologies:/app/ontologies:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health/live || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  knowledge:
+    build:
+      context: .
+      dockerfile: services/knowledge/Dockerfile
+    environment:
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: ${NEO4J_USERNAME:-neo4j}
+      NEO4J_PASSWORD: ${NEO4J_PASSWORD:-changeme}
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: 6333
+      MONGODB_URI: mongodb://cci_app:${MONGODB_APP_PASSWORD:-apppassword}@mongodb:27017/cci_operational?authSource=cci_operational
+      REDIS_URL: redis://redis:6379/0
+      ONTOLOGIES_PATH: /app/ontologies
+      CCI_KNOWLEDGE_PORT: 8001
+    ports:
+      - "8001:8001"
+    networks:
+      - cci-backend
+    depends_on:
+      neo4j:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ./docs/ontologies:/app/ontologies:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8001/health/live || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
   # --- Observability ----------------------------------------------------------
 
   prometheus:

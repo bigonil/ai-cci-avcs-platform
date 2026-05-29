@@ -15,6 +15,7 @@ dependencies = [
     "pyyaml>=6.0",
     "prometheus-fastapi-instrumentator>=7.0",
     "structlog>=24.1",
+    "redis[hiredis]>=5.0",
 ]
 
 [project.optional-dependencies]
@@ -24,6 +25,13 @@ test = [
     "httpx>=0.27",
     "testcontainers[neo4j,mongodb]>=4.5",
     "coverage>=7.5",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = [
+    "integration: tests that require real containers",
+    "live_llm: tests that call the Anthropic API",
 ]
 
 [build-system]
