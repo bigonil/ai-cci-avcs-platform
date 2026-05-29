@@ -1,0 +1,159 @@
+domain: ducati_corse
+version: 1.0.0
+description: "Ontologia verticale Ducati Corse — MotoGP/WSBK compliance, FIA/FIM regulations, budget cap, development tokens"
+
+entities:
+  - name: RaceComponent
+    description: "Componente omologato per competizione (motore, telaio, aerodinamica)"
+    properties:
+      - name: component_id
+        type: string
+        required: true
+      - name: category
+        type: string
+        required: true
+        description: "engine | chassis | aero | electronics | tyres"
+      - name: homologation_ref
+        type: string
+        required: true
+      - name: season
+        type: int
+        required: true
+      - name: development_tokens_used
+        type: int
+        required: false
+        description: "Token FIM consumati per questo sviluppo"
+
+  - name: HomologationCertificate
+    description: "Certificato FIM/FIA di omologazione componente"
+    properties:
+      - name: cert_id
+        type: string
+        required: true
+      - name: issuer
+        type: string
+        required: true
+        description: "FIM | FIA | DORNA"
+      - name: valid_from
+        type: date
+        required: true
+      - name: valid_to
+        type: date
+        required: true
+      - name: championship
+        type: string
+        required: true
+        description: "MotoGP | WSBK | WorldSSP"
+      - name: component_category
+        type: string
+        required: true
+
+  - name: BudgetCapDeclaration
+    description: "Dichiarazione annuale budget cap FIM MotoGP"
+    properties:
+      - name: declaration_id
+        type: string
+        required: true
+      - name: season
+        type: int
+        required: true
+      - name: declared_amount_eur
+        type: float
+        required: true
+      - name: cap_limit_eur
+        type: float
+        required: true
+      - name: submitted_date
+        type: date
+        required: true
+      - name: auditor
+        type: string
+        required: false
+
+  - name: DevelopmentTokenAllocation
+    description: "Allocazione token di sviluppo stagionale (FIM)"
+    properties:
+      - name: season
+        type: int
+        required: true
+      - name: total_tokens
+        type: int
+        required: true
+      - name: tokens_used
+        type: int
+        required: true
+      - name: tokens_remaining
+        type: int
+        required: true
+
+  - name: TechnicalRegulation
+    description: "Regolamento tecnico FIM/FIA applicabile"
+    properties:
+      - name: regulation_id
+        type: string
+        required: true
+      - name: championship
+        type: string
+        required: true
+      - name: season
+        type: int
+        required: true
+      - name: version
+        type: string
+        required: true
+      - name: effective_date
+        type: date
+        required: true
+      - name: expiry_date
+        type: date
+        required: false
+
+relations:
+  - type: HOMOLOGATED_BY
+    from: RaceComponent
+    to: HomologationCertificate
+    temporal: true
+
+  - type: GOVERNED_BY
+    from: RaceComponent
+    to: TechnicalRegulation
+    temporal: true
+
+  - type: CHARGED_TO
+    from: RaceComponent
+    to: BudgetCapDeclaration
+    temporal: false
+
+  - type: CONSUMES_TOKENS
+    from: RaceComponent
+    to: DevelopmentTokenAllocation
+    temporal: false
+
+rules:
+  - id: DC001
+    description: "Ogni componente in gara deve avere omologazione FIM valida per l'intera stagione"
+    when: "RaceComponent.status = 'IN_RACE' AND NOT exists(HomologationCertificate WHERE valid_from <= season_start AND valid_to >= season_end AND championship = RaceComponent.championship)"
+    severity: CRITICAL
+    domain: compliance
+    article_ref: "FIM MotoGP Technical Regulations §3.1"
+
+  - id: DC002
+    description: "La dichiarazione budget cap non deve superare il limite FIM"
+    when: "BudgetCapDeclaration.declared_amount_eur > BudgetCapDeclaration.cap_limit_eur"
+    severity: HIGH
+    domain: financial
+    article_ref: "FIM MotoGP Cost Cap Regulations §5"
+
+  - id: DC003
+    description: "I token di sviluppo usati non devono superare il totale allocato"
+    when: "DevelopmentTokenAllocation.tokens_used > DevelopmentTokenAllocation.total_tokens"
+    severity: HIGH
+    domain: regulatory
+    article_ref: "FIM MotoGP Technical Regulations §10 (Concession Rules)"
+
+  - id: DC004
+    description: "Ogni componente deve essere conforme al regolamento tecnico vigente nella stagione"
+    when: "NOT exists(TechnicalRegulation WHERE season = RaceComponent.season AND effective_date <= race_date)"
+    severity: CRITICAL
+    domain: regulatory
+    article_ref: "FIM MotoGP Technical Regulations §1.2"

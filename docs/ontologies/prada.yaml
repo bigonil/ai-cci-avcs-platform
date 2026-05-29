@@ -1,0 +1,193 @@
+domain: prada
+version: 1.0.0
+description: "Ontologia verticale Prada Group — Digital Product Passport (EU DPP), supply chain sostenibilità, compliance ESG e CSRD"
+
+entities:
+  - name: Product
+    description: "Prodotto fisico Prada con Digital Product Passport (Reg. UE 2024/1781)"
+    properties:
+      - name: product_id
+        type: string
+        required: true
+      - name: sku
+        type: string
+        required: true
+      - name: category
+        type: string
+        required: true
+        description: "handbag | footwear | apparel | eyewear | fragrance"
+      - name: collection
+        type: string
+        required: false
+      - name: season
+        type: string
+        required: false
+        description: "SS2026 | FW2026"
+      - name: dpp_id
+        type: string
+        required: false
+        description: "ID univoco del Digital Product Passport (QR/datamatrix)"
+
+  - name: DigitalProductPassport
+    description: "DPP ai sensi del Regolamento Ecodesign UE 2024/1781"
+    properties:
+      - name: dpp_id
+        type: string
+        required: true
+      - name: product_id
+        type: string
+        required: true
+      - name: issued_date
+        type: date
+        required: true
+      - name: valid_until
+        type: date
+        required: false
+      - name: recycled_content_pct
+        type: float
+        required: false
+      - name: carbon_footprint_kgco2e
+        type: float
+        required: false
+      - name: repairability_score
+        type: int
+        required: false
+        description: "Scala 1-10 EU Ecodesign"
+      - name: data_carrier
+        type: string
+        required: true
+        description: "QR | RFID | NFC | DataMatrix"
+
+  - name: Supplier
+    description: "Fornitore nella supply chain Prada"
+    properties:
+      - name: supplier_id
+        type: string
+        required: true
+      - name: name
+        type: string
+        required: true
+      - name: country
+        type: string
+        required: true
+      - name: tier
+        type: int
+        required: true
+        description: "1 = diretto, 2 = sub-fornitore, 3 = materia prima"
+      - name: ethical_audit_status
+        type: string
+        required: false
+        description: "CERTIFIED | PENDING | NON_COMPLIANT"
+
+  - name: MaterialCertification
+    description: "Certificazione materiale (GOTS, GRS, LWG, FSC, RCS)"
+    properties:
+      - name: cert_id
+        type: string
+        required: true
+      - name: standard
+        type: string
+        required: true
+        description: "GOTS | GRS | LWG | FSC | RCS | OEKO-TEX | SA8000"
+      - name: issuer
+        type: string
+        required: true
+      - name: valid_from
+        type: date
+        required: true
+      - name: valid_to
+        type: date
+        required: true
+      - name: scope
+        type: string
+        required: true
+
+  - name: ESGReport
+    description: "Report ESG/CSRD annuale (ESRS, GRI)"
+    properties:
+      - name: report_id
+        type: string
+        required: true
+      - name: fiscal_year
+        type: int
+        required: true
+      - name: framework
+        type: string
+        required: true
+        description: "CSRD | GRI | TCFD | UN SDGs"
+      - name: published_date
+        type: date
+        required: true
+      - name: scope1_emissions_tco2e
+        type: float
+        required: false
+      - name: scope2_emissions_tco2e
+        type: float
+        required: false
+      - name: scope3_emissions_tco2e
+        type: float
+        required: false
+      - name: verified_by
+        type: string
+        required: false
+        description: "Nome ente di terza parte che verifica il report"
+
+relations:
+  - type: HAS_DPP
+    from: Product
+    to: DigitalProductPassport
+    temporal: true
+
+  - type: SUPPLIED_BY
+    from: Product
+    to: Supplier
+    temporal: true
+    properties:
+      - name: material_component
+        type: string
+
+  - type: CERTIFIED_WITH
+    from: Supplier
+    to: MaterialCertification
+    temporal: true
+
+  - type: COVERED_BY_ESG
+    from: Product
+    to: ESGReport
+    temporal: false
+
+rules:
+  - id: PR001
+    description: "Ogni prodotto messo in commercio nell'UE dopo 2027-01-01 deve avere un DPP valido"
+    when: "Product.market = 'EU' AND Product.launch_date >= 2027-01-01 AND NOT exists(DigitalProductPassport WHERE product_id = Product.product_id)"
+    severity: CRITICAL
+    domain: regulatory
+    article_ref: "Reg. UE 2024/1781 (Ecodesign) art. 9"
+
+  - id: PR002
+    description: "I fornitori di tier 1 devono avere audit etico attivo"
+    when: "Supplier.tier = 1 AND (Supplier.ethical_audit_status IS NULL OR Supplier.ethical_audit_status = 'NON_COMPLIANT')"
+    severity: HIGH
+    domain: compliance
+    article_ref: "CSRD ESRS S2 — Workers in the value chain"
+
+  - id: PR003
+    description: "Le certificazioni materiale dei fornitori devono essere valide al momento della produzione"
+    when: "NOT exists(MaterialCertification WHERE valid_from <= production_date AND valid_to >= production_date)"
+    severity: HIGH
+    domain: compliance
+    article_ref: "Policy Sostenibilità Prada §4.1"
+
+  - id: PR004
+    description: "Il report ESG deve essere pubblicato entro 6 mesi dalla chiusura dell'esercizio"
+    when: "ESGReport.published_date > fiscal_year_end + 180 days"
+    severity: MEDIUM
+    domain: regulatory
+    article_ref: "Dir. CSRD 2022/2464 art. 19a"
+
+  - id: PR005
+    description: "Le emissioni Scope 3 dichiarate nel DPP devono essere coerenti con quelle dell'ESG Report"
+    when: "abs(DigitalProductPassport.carbon_footprint_kgco2e - ESGReport.scope3_emissions_tco2e / product_count) > tolerance_threshold"
+    severity: MEDIUM
+    domain: financial
+    article_ref: "ESRS E1-6 §44 (Gross Scopes 3)"

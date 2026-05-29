@@ -96,6 +96,21 @@ make clean           # pulizia artefatti build
 - **GDPR** — Data flow e pseudonimizzazione: [docs/compliance/gdpr-data-flow.md](docs/compliance/gdpr-data-flow.md)
 - **ISO 42001** — Roadmap AIMS: [docs/compliance/iso42001-roadmap.md](docs/compliance/iso42001-roadmap.md)
 
+## Domini verticali (ontologie)
+
+Il motore è **ontology-agnostic**: ogni dominio viene abilitato aggiungendo un file YAML in `docs/ontologies/`.
+
+| Dominio | File | Entità chiave | Regole |
+|---------|------|--------------|--------|
+| Hera Group IT | [hera_it.yaml](docs/ontologies/hera_it.yaml) | CloudCommitment, ISO27001Cert, BudgetApproval | R001-R002 |
+| AOU Modena | [aou_clinical.yaml](docs/ontologies/aou_clinical.yaml) | ClinicalTrial, EthicsApproval | C001 |
+| SEMSOTEC | [semsotec_product.yaml](docs/ontologies/semsotec_product.yaml) | Product, ProductCertification | P001 |
+| Ducati Corse | [ducati_corse.yaml](docs/ontologies/ducati_corse.yaml) | RaceComponent, HomologationCertificate, BudgetCap, DevelopmentTokens | DC001-DC004 |
+| Dallara | [dallara.yaml](docs/ontologies/dallara.yaml) | Vehicle, CrashTestCertification, OEMContract, RDProject | DA001-DA004 |
+| Prada Group | [prada.yaml](docs/ontologies/prada.yaml) | Product, DigitalProductPassport, Supplier, MaterialCert, ESGReport | PR001-PR005 |
+
+**Scenario pilota demo**: Hera Q1 2026 (`make demo`) — gli altri domini vengono abilitati a runtime senza deploy.
+
 ## ADR
 
 - [ADR-0001](docs/adr/0001-use-langgraph.md) — Uso di LangGraph come orchestratore agentico
@@ -104,4 +119,4 @@ make clean           # pulizia artefatti build
 
 ---
 
-*Build it like it's already in production at Hera, AOU Modena e SEMSOTEC.*
+*Build it like it's already in production at Hera, AOU Modena, SEMSOTEC, Ducati Corse, Dallara e Prada.*

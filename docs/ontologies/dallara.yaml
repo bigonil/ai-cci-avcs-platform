@@ -1,0 +1,148 @@
+domain: dallara
+version: 1.0.0
+description: "Ontologia verticale Dallara Automobili — omologazione veicoli, certificazioni crash test, contratti OEM, compliance R&D"
+
+entities:
+  - name: Vehicle
+    description: "Veicolo o piattaforma sviluppata da Dallara (ex. SF23, IR18, GB08)"
+    properties:
+      - name: vehicle_id
+        type: string
+        required: true
+      - name: model_code
+        type: string
+        required: true
+      - name: championship
+        type: string
+        required: true
+        description: "IndyCar | Formula 2 | Formula 3 | Indy NXT | Road Car"
+      - name: customer
+        type: string
+        required: true
+      - name: homologation_year
+        type: int
+        required: true
+
+  - name: CrashTestCertification
+    description: "Certificazione crash test FIA/FIM su struttura del veicolo"
+    properties:
+      - name: cert_id
+        type: string
+        required: true
+      - name: test_type
+        type: string
+        required: true
+        description: "frontal | side | rollover | nose | cockpit"
+      - name: issuer
+        type: string
+        required: true
+      - name: valid_from
+        type: date
+        required: true
+      - name: valid_to
+        type: date
+        required: true
+      - name: standard_ref
+        type: string
+        required: true
+        description: "FIA Technical Regulation art. reference"
+      - name: result
+        type: string
+        required: true
+        description: "PASS | FAIL | CONDITIONAL"
+
+  - name: OEMContract
+    description: "Contratto con cliente OEM per fornitura veicoli/componenti"
+    properties:
+      - name: contract_id
+        type: string
+        required: true
+      - name: customer_name
+        type: string
+        required: true
+      - name: value_eur
+        type: float
+        required: true
+      - name: start_date
+        type: date
+        required: true
+      - name: end_date
+        type: date
+        required: true
+      - name: units_committed
+        type: int
+        required: false
+      - name: status
+        type: string
+        required: true
+        description: "ACTIVE | COMPLETED | SUSPENDED | TERMINATED"
+
+  - name: RDProject
+    description: "Progetto R&D con budget e milestone (es. simulatore, nuovo telaio)"
+    properties:
+      - name: project_id
+        type: string
+        required: true
+      - name: name
+        type: string
+        required: true
+      - name: budget_eur
+        type: float
+        required: true
+      - name: actual_spend_eur
+        type: float
+        required: false
+      - name: start_date
+        type: date
+        required: true
+      - name: planned_end_date
+        type: date
+        required: true
+      - name: status
+        type: string
+        required: true
+
+relations:
+  - type: CERTIFIED_BY
+    from: Vehicle
+    to: CrashTestCertification
+    temporal: true
+
+  - type: DELIVERED_UNDER
+    from: Vehicle
+    to: OEMContract
+    temporal: true
+
+  - type: FINANCED_BY
+    from: RDProject
+    to: OEMContract
+    temporal: false
+
+rules:
+  - id: DA001
+    description: "Ogni veicolo in competizione deve avere tutte le certificazioni crash test FIA valide"
+    when: "Vehicle.status = 'IN_COMPETITION' AND NOT exists(CrashTestCertification WHERE valid_from <= competition_date AND valid_to >= competition_date AND result = 'PASS')"
+    severity: CRITICAL
+    domain: compliance
+    article_ref: "FIA Technical Regulations §15 (Safety Structures)"
+
+  - id: DA002
+    description: "Il contratto OEM deve essere attivo per tutta la durata della fornitura veicoli"
+    when: "Vehicle.delivery_date NOT BETWEEN OEMContract.start_date AND OEMContract.end_date"
+    severity: HIGH
+    domain: financial
+    article_ref: "Contratto OEM §4 (Termini di consegna)"
+
+  - id: DA003
+    description: "Il budget R&D effettivo non deve superare quello approvato del 20%"
+    when: "RDProject.actual_spend_eur > RDProject.budget_eur * 1.20"
+    severity: HIGH
+    domain: financial
+    article_ref: "Policy R&D Dallara §3.2"
+
+  - id: DA004
+    description: "Crash test certification deve coprire l'intera stagione competitiva"
+    when: "CrashTestCertification.valid_to < season_end_date AND Vehicle.championship IS NOT NULL"
+    severity: CRITICAL
+    domain: compliance
+    article_ref: "FIA Technical Regulations §15.1"
