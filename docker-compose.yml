@@ -201,6 +201,44 @@ services:
       start_period: 30s
     restart: unless-stopped
 
+  agents:
+    build:
+      context: .
+      dockerfile: services/agents/Dockerfile
+    environment:
+      CCI_LLM_MODEL: ${CCI_LLM_MODEL:-claude-sonnet-4-6}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      CCI_RETRIEVAL_URL: http://retrieval:8002
+      CCI_COHERENCE_URL: http://coherence:8003
+      CCI_GOVERNANCE_URL: http://governance:8005
+      MONGODB_URI: mongodb://cci_app:${MONGODB_APP_PASSWORD:-apppassword}@mongodb:27017/cci_operational?authSource=cci_operational
+      CCI_CHECKPOINT_ENABLED: ${CCI_CHECKPOINT_ENABLED:-true}
+      ONTOLOGIES_PATH: /app/ontologies
+      PROMPTS_PATH: /app/prompts/v1
+      CCI_AGENTS_PORT: 8004
+      CCI_HITL_THRESHOLD_EUR: ${CCI_HITL_THRESHOLD_EUR:-50000}
+    ports:
+      - "8004:8004"
+    networks:
+      - cci-backend
+    depends_on:
+      retrieval:
+        condition: service_healthy
+      coherence:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ./docs/ontologies:/app/ontologies:ro
+      - ./prompts:/app/prompts:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8004/health/live || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
   coherence:
     build:
       context: .
