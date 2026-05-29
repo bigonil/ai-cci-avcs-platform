@@ -1,7 +1,6 @@
 services:
   # ---------------------------------------------------------------------------
-  # CCI / AVCS Services — Step 1 skeleton
-  # Infra containers fully defined in Step 3
+  # CCI / AVCS — Infra completa (Step 3)
   # ---------------------------------------------------------------------------
 
   # --- Infrastructure --------------------------------------------------------
