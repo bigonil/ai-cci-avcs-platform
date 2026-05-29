@@ -123,7 +123,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/pre-tool-use.mjs",
+            "command": "node .claude/hooks/pre-tool-use.cjs",
             "timeout_ms": 5000
           }
         ]
@@ -135,7 +135,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/post-tool-use.mjs",
+            "command": "node .claude/hooks/post-tool-use.cjs",
             "timeout_ms": 30000
           }
         ]
