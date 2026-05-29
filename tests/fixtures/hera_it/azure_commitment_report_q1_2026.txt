@@ -1,36 +1,19 @@
-MICROSOFT AZURE — ENTERPRISE AGREEMENT COMMITMENT REPORT Q1 2026
-Hera Group S.p.A. — Enrollment ID: EA-IT-2024-00892
-Report generato: 2026-01-31
+HERA GROUP S.p.A. — IT Cloud Commitment Report
+Azure Enterprise Agreement — Q1 2026
+Documento interno riservato
 
-RIEPILOGO COMMITMENT CONTRATTUALE
+=== COMMITMENT AZURE EA ===
 
-Provider: Microsoft Azure
-Tipo contratto: Enterprise Agreement (EA) — Microsoft Azure Consumption Commitment (MACC)
-Periodo di copertura: 2026-01-01 — 2026-12-31
-Importo commitment annuale: 580.000 EUR
-Commitment mensile medio: 48.333 EUR
-Budget DSI allocato per Azure: 500.000 EUR
+In data 15 dicembre 2025, Hera Group S.p.A. ha sottoscritto con Microsoft
+un Enterprise Agreement (EA) per l'utilizzo dei servizi Azure cloud.
 
-DETTAGLIO Q1 2026
+Dettagli commitment:
+  Provider: Azure
+  Tipo contratto: Enterprise Agreement (EA)
+  Commitment annuale: 580.000 EUR
+  Periodo di validita: 2026-01-01 — 2026-12-31
+  Costo mensile medio: 48.333 EUR/mese
+  Rif. contratto: MSEA-HERA-2026-0042
 
-  Gennaio 2026:   49.800 EUR (fatturato)
-  Febbraio 2026:  47.200 EUR (fatturato)
-  Marzo 2026:     48.600 EUR (stimato)
-  Totale Q1:     145.600 EUR
-
-PRINCIPALI SERVIZI AZURE UTILIZZATI (Q1 2026):
-  Azure Virtual Machines (IaaS):     38% della spesa
-  Azure SQL Database:                22%
-  Azure Backup & Site Recovery:      18%
-  Azure Active Directory P2:         12%
-  Azure Monitor / Log Analytics:     10%
-
-STATO COMMITMENT vs BUDGET ALLOCATO:
-  Commitment annuale Azure: 580.000 EUR
-  Budget DSI allocato Azure: 500.000 EUR
-  Sforamento allocation:    +80.000 EUR (+16%)
-
-NOTE: Il commitment EA di 580.000 EUR supera l'allocation DSI approvata
-di 500.000 EUR. Il delta di 80.000 EUR è stato comunicato al CTO in data
-2026-01-20. La richiesta di revisione allocation è in corso di approvazione.
-Il contratto prevede penali per utilizzo < 75% del commitment annuale.
+Il commitment Azure copre workload ERP (SAP), infrastruttura data center
+virtuale, servizi di backup e disaster recovery.

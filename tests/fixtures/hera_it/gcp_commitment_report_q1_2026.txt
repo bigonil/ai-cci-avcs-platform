@@ -1,44 +1,16 @@
-GOOGLE CLOUD PLATFORM — COMMITTED USE DISCOUNT REPORT Q1 2026
-Hera Group S.p.A. — Billing Account: 012345-ABCDEF-789012
-Report generato: 2026-01-31
+HERA GROUP S.p.A. — IT Cloud Commitment Report
+Google Cloud Committed Use Discount — Q1 2026
 
-RIEPILOGO COMMITMENT CONTRATTUALE
+=== COMMITMENT GCP CUD ===
 
-Provider: Google Cloud Platform (GCP)
-Tipo contratto: Committed Use Discount (CUD) — 1 anno
-Periodo di copertura: 2026-01-01 — 2026-12-31
-Importo commitment annuale: 85.000 EUR
-Commitment mensile medio: 7.083 EUR
-Budget DSI allocato per GCP: 100.000 EUR
+Commitment GCP tramite Committed Use Discount (CUD) su BigQuery e Vertex AI.
 
-DETTAGLIO Q1 2026
+Dettagli:
+  Provider: GCP
+  Tipo contratto: CUD (Committed Use Discount)
+  Commitment annuale: 85.000 EUR
+  Periodo: 2026-01-01 — 2026-12-31
+  Rif. contratto: GCP-CUD-HERA-2026-0005
 
-  Gennaio 2026:    7.200 EUR (fatturato)
-  Febbraio 2026:   6.900 EUR (fatturato)
-  Marzo 2026:      7.100 EUR (stimato)
-  Totale Q1:      21.200 EUR
-
-PRINCIPALI SERVIZI GCP UTILIZZATI (Q1 2026):
-  BigQuery (analytics):            50% della spesa
-  Vertex AI (ML/sperimentazione):  30%
-  Cloud Storage:                   12%
-  Looker Studio:                    8%
-
-STATO COMMITMENT vs BUDGET ALLOCATO:
-  Commitment annuale GCP: 85.000 EUR
-  Budget DSI allocato GCP: 100.000 EUR
-  Margine disponibile: +15.000 EUR (entro allocation)
-  Stato: CONFORME
-
-RIEPILOGO MULTI-CLOUD 2026 (tutti i provider):
-  Azure:  580.000 EUR
-  AWS:    190.000 EUR
-  GCP:     85.000 EUR
-  TOTALE: 855.000 EUR
-  Budget CdA totale approvato: 800.000 EUR
-  Sforamento totale: +55.000 EUR (+6,9%)
-
-NOTE: L'utilizzo GCP e' nei limiti dell'allocation approvata.
-Tuttavia, il totale multi-cloud di 855.000 EUR supera il budget CdA
-totale di 800.000 EUR di 55.000 EUR (+6,9%), principalmente a causa
-dello sforamento Azure. Notifica CFO in corso.
+Workload GCP: analytics predittivi su Google Cloud (BigQuery),
+modelli ML su Vertex AI per ottimizzazione rete distribuzione.

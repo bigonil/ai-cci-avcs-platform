@@ -1,35 +1,16 @@
-AWS ENTERPRISE DISCOUNT PROGRAM — COMMITMENT REPORT Q1 2026
-Hera Group S.p.A. — Account ID: 123456789012
-Report generato: 2026-01-31
+HERA GROUP S.p.A. — IT Cloud Commitment Report
+AWS Enterprise Discount Program — Q1 2026
 
-RIEPILOGO COMMITMENT CONTRATTUALE
+=== COMMITMENT AWS EDP ===
 
-Provider: Amazon Web Services (AWS)
-Tipo contratto: Enterprise Discount Program (EDP)
-Periodo di copertura: 2026-01-01 — 2026-12-31
-Importo commitment annuale: 190.000 EUR
-Commitment mensile medio: 15.833 EUR
-Budget DSI allocato per AWS: 200.000 EUR
+Commitment AWS tramite Enterprise Discount Program (EDP).
 
-DETTAGLIO Q1 2026
+Dettagli:
+  Provider: AWS
+  Tipo contratto: EDP (Enterprise Discount Program)
+  Commitment annuale: 190.000 EUR
+  Periodo: 2026-01-01 — 2026-12-31
+  Rif. contratto: AWS-EDP-HERA-2026-0011
 
-  Gennaio 2026:   16.200 EUR (fatturato)
-  Febbraio 2026:  15.400 EUR (fatturato)
-  Marzo 2026:     15.900 EUR (stimato)
-  Totale Q1:      47.500 EUR
-
-PRINCIPALI SERVIZI AWS UTILIZZATI (Q1 2026):
-  Amazon S3 (data lake):        45% della spesa
-  Amazon Redshift:              30%
-  AWS Glue (ETL):               15%
-  Amazon CloudWatch:            10%
-
-STATO COMMITMENT vs BUDGET ALLOCATO:
-  Commitment annuale AWS: 190.000 EUR
-  Budget DSI allocato AWS: 200.000 EUR
-  Margine disponibile: +10.000 EUR (entro allocation)
-  Stato: CONFORME
-
-NOTE: Il commitment AWS di 190.000 EUR e' inferiore all'allocation approvata
-di 200.000 EUR. Nessuna criticita' rilevata per il provider AWS.
-Il contratto prevede penali per utilizzo < 80% del commitment annuale.
+Workload AWS: analytics big data (Amazon EMR), object storage (S3),
+funzioni serverless (Lambda) per pipeline dati ambientali.

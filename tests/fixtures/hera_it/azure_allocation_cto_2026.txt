@@ -1,0 +1,16 @@
+HERA GROUP S.p.A. — Allocazione Budget Cloud per Provider
+Approvazione CTO — 25 novembre 2025
+
+=== ALLOCAZIONE BUDGET DSI AZURE 2026 ===
+
+Il CTO ha approvato la seguente allocazione del budget cloud per il provider Azure.
+
+Allocazione budget DSI per Azure: 500.000 EUR
+Provider: Azure
+Anno: 2026
+Approvato dal CTO il: 2025-11-25
+Motivazione: Azure come provider primario per workload ERP e produzione.
+
+NOTA: L'importo di 500.000 EUR rappresenta la quota massima autorizzata
+per spesa Azure nell'esercizio 2026. Superamenti richiedono
+pre-autorizzazione CFO prima della firma contrattuale.

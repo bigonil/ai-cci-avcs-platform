@@ -1,43 +1,16 @@
-HERA GROUP — BILANCIO PREVENTIVO IT 2026
-Approvato dal Consiglio di Amministrazione in data 2025-11-15
+HERA GROUP S.p.A. — Piano Finanziario IT 2026
+Approvato dal Consiglio di Amministrazione — 20 novembre 2025
 
-SEZIONE 4 — BUDGET IT E INFRASTRUTTURA CLOUD MULTI-PROVIDER
+=== BUDGET IT CLOUD 2026 — APPROVAZIONE CdA ===
 
-Il Consiglio di Amministrazione ha approvato per l'esercizio 2026 un budget
-totale destinato all'infrastruttura cloud pari a:
+Il Consiglio di Amministrazione ha approvato il budget totale per
+l'infrastruttura cloud IT multi-provider per l'esercizio 2026.
 
-  BUDGET TOTALE CLOUD APPROVATO 2026: 800.000 EUR
-  Categoria: Cloud Infrastructure
-  Anno di riferimento: 2026
-  Approvato da: Consiglio di Amministrazione Hera Group
-  Data approvazione: 2025-11-15
-  Responsabile: Direzione DSI
+Budget totale approvato dal CdA: 800.000 EUR
+Anno di riferimento: 2026
+Categoria: Infrastruttura IT Cloud
+Approvato da: Consiglio di Amministrazione Hera Group
+Data approvazione: 2025-11-20
 
-ALLOCAZIONE PER PROVIDER (delibera DSI 2025-11-20):
-
-  Provider Azure (primario — Microsoft EA):
-    Budget allocato: 500.000 EUR
-    Motivazione: migrazione workload ERP, SAP, backup enterprise
-    Approvato da: CTO Hera Group
-    Data approvazione allocazione: 2025-11-20
-
-  Provider AWS (secondario — Enterprise Discount Program):
-    Budget allocato: 200.000 EUR
-    Motivazione: workload data lake, analytics, disaster recovery
-    Approvato da: CTO Hera Group
-    Data approvazione allocazione: 2025-11-20
-
-  Provider GCP (terziario — analytics e AI/ML):
-    Budget allocato: 100.000 EUR
-    Motivazione: BigQuery analytics, Vertex AI, sperimentazione ML
-    Approvato da: CTO Hera Group
-    Data approvazione allocazione: 2025-11-20
-
-  TOTALE ALLOCAZIONI: 800.000 EUR (= budget totale CdA approvato)
-
-NOTA GOVERNANCE:
-Lo sforamento del budget allocato per singolo provider superiore al 5%
-richiede approvazione del CTO entro 15 giorni dalla rilevazione.
-Lo sforamento del budget totale multi-cloud superiore al 5%
-richiede approvazione straordinaria del CFO e comunicazione al CdA.
-Il limite non è incrementabile senza delibera straordinaria del CdA.
+Nota: Superamento del budget approvato richiede autorizzazione CFO
+con presentazione al CdA nella prima seduta utile.
