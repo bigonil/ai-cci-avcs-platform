@@ -2,8 +2,6 @@ import { Suspense } from "react"
 import { IncoherenceListClient } from "./list-client"
 import { IncoherenceListSkeleton } from "./loading"
 
-export const experimental_ppr = true
-
 export default function IncoherencesPage() {
   return (
     <div className="space-y-6">
