@@ -27,6 +27,9 @@ test = [
     "coverage>=7.5",
 ]
 
+[tool.uv.sources]
+cci-common = { workspace = true }
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 markers = [

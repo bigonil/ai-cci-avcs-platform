@@ -1,6 +1,8 @@
 """Tests for TemporalGraph — read-only guard, upsert, soft-delete."""
 from __future__ import annotations
 
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 
 from cci_knowledge.temporal_graph import TemporalGraph, _assert_readonly
@@ -43,18 +45,25 @@ class TestTemporalGraphMocked:
 
     @pytest.fixture()
     def graph(self) -> TemporalGraph:
-        from unittest.mock import AsyncMock, MagicMock, patch
-        with patch("cci_knowledge.temporal_graph.AsyncGraphDatabase") as MockDB:
-            driver = AsyncMock()
-            session = AsyncMock()
-            session.__aenter__ = AsyncMock(return_value=session)
-            session.__aexit__ = AsyncMock(return_value=False)
-            session.run = AsyncMock(return_value=AsyncMock(data=AsyncMock(return_value=[])))
-            driver.session.return_value = session
-            MockDB.driver.return_value = driver
-            g = TemporalGraph("bolt://localhost:7687", "neo4j", "test")
-            g._driver = driver
-            return g
+        # driver.session() is a SYNC call returning an async context manager.
+        # Use MagicMock for driver.session so it returns the session directly
+        # (not a coroutine), then set up __aenter__/__aexit__ on the session.
+        run_result = MagicMock()
+        run_result.data = AsyncMock(return_value=[])
+        run_result.single = AsyncMock(return_value={"n": 0})
+
+        session = MagicMock()
+        session.__aenter__ = AsyncMock(return_value=session)
+        session.__aexit__ = AsyncMock(return_value=False)
+        session.run = AsyncMock(return_value=run_result)
+
+        driver = MagicMock()
+        driver.session = MagicMock(return_value=session)
+        driver.close = AsyncMock()
+
+        g = TemporalGraph("bolt://localhost:7687", "neo4j", "test")
+        g._driver = driver  # type: ignore[assignment]
+        return g
 
     @pytest.mark.asyncio
     async def test_bootstrap_idempotent(self, graph: TemporalGraph) -> None:
@@ -81,8 +90,8 @@ class TestTemporalGraphMocked:
 
     @pytest.mark.asyncio
     async def test_soft_delete(self, graph: TemporalGraph) -> None:
-        session = graph._driver.session.return_value.__aenter__.return_value  # type: ignore[attr-defined]
-        single_mock = AsyncMock(return_value={"n": 3})
-        session.run.return_value.single = single_mock
+        # session is driver.session.return_value; run_result.single returns {"n": 3}
+        session = graph._driver.session.return_value  # type: ignore[attr-defined]
+        session.run.return_value.single = AsyncMock(return_value={"n": 3})
         count = await graph.delete_entity_by_doc_id("chunk-abc")
         assert count == 3

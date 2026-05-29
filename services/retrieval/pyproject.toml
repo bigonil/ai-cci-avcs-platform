@@ -26,6 +26,16 @@ test = [
     "coverage>=7.5",
 ]
 
+[tool.uv.sources]
+cci-common = { workspace = true }
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+markers = [
+    "integration: tests that require real containers",
+    "live_llm: tests that call the Anthropic API",
+]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

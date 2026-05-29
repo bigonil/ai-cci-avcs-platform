@@ -133,6 +133,37 @@ services:
       start_period: 30s
     restart: unless-stopped
 
+  retrieval:
+    build:
+      context: .
+      dockerfile: services/retrieval/Dockerfile
+    environment:
+      QDRANT_HOST: qdrant
+      QDRANT_PORT: 6333
+      REDIS_URL: redis://redis:6379/0
+      CCI_RETRIEVAL_PORT: 8002
+      CCI_EMBEDDING_MODEL: ${CCI_EMBEDDING_MODEL:-all-mpnet-base-v2}
+      CCI_RERANKER_MODEL: ${CCI_RERANKER_MODEL:-cross-encoder/ms-marco-MiniLM-L-6-v2}
+      CCI_RERANKER_ENABLED: ${CCI_RERANKER_ENABLED:-true}
+    ports:
+      - "8002:8002"
+    networks:
+      - cci-backend
+    depends_on:
+      qdrant:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - retrieval_model_cache:/app/.cache
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8002/health/live || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+
   knowledge:
     build:
       context: .
@@ -225,6 +256,7 @@ volumes:
   prometheus_data:
   grafana_data:
   tempo_data:
+  retrieval_model_cache:
 
 # -----------------------------------------------------------------------------
 # Networks

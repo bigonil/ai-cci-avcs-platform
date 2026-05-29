@@ -28,6 +28,9 @@ test = [
     "coverage>=7.5",
 ]
 
+[tool.uv.sources]
+cci-common = { workspace = true }
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
