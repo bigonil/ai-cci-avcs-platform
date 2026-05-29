@@ -1,0 +1,22 @@
+---
+title: CCI/AVCS — C4 Context Diagram
+---
+C4Context
+    title CCI/AVCS — Continuous Coherence Intelligence Platform
+
+    Person(cfo, "CFO / Risk Manager", "Riceve alert di incoerenza e approva decisioni ad alto impatto")
+    Person(analyst, "Compliance Analyst", "Carica documenti, gestisce ontologie, monitora audit trail")
+    Person(developer, "Developer / Admin", "Configura ontologie verticali, monitora infrastruttura")
+
+    System(cci, "CCI/AVCS Platform", "Verifica continua di coerenza finanziaria, documentale e di compliance cross-dominio")
+
+    System_Ext(anthropic, "Anthropic API", "LLM Claude Sonnet 4.6 — generazione spiegazioni con citation enforcement")
+    System_Ext(docs_src, "Fonti Documentali", "ERP, GRC, storage aziendale, email, PDF contrattuali")
+    System_Ext(identity, "Identity Provider", "SAML/OIDC per autenticazione utenti")
+
+    Rel(cfo, cci, "Consulta alert, approva decisioni HITL")
+    Rel(analyst, cci, "Carica documenti, configura regole")
+    Rel(developer, cci, "Configura e monitora")
+    Rel(cci, anthropic, "Chiamate LLM con prompt caching", "HTTPS/REST")
+    Rel(docs_src, cci, "Feed documentale", "API/Upload/Webhook")
+    Rel(cci, identity, "Autenticazione", "OIDC")

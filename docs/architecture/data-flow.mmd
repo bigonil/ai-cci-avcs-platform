@@ -1,0 +1,23 @@
+---
+title: CCI/AVCS — RAG-Coherence Loop Data Flow
+---
+flowchart TD
+    A[Documento caricato\nPDF/DOCX/XLSX] --> B[ingestion-service]
+    B -->|NER + chunking| C[Qdrant\nchunk embeddings]
+    B -->|Entità + relazioni| D[Neo4j\nTemporal KG]
+    B -->|CloudEvent ingestion.document.indexed.v1| E[Redis Streams]
+
+    E --> F[agent-orchestrator\nPlanner]
+    F -->|verification_plan| G[Retriever Agent]
+    G -->|hybrid search RRF| C
+    G -->|chunks ranked| H[Verifier Agent]
+    H -->|Cypher temporal queries| D
+    H -->|incoherences structured| I[Generator Agent]
+    I -->|LLM call + citation enforcement| J[Anthropic API\nclaude-sonnet-4-6]
+    J -->|output groundato| I
+    I -->|alert markdown + sources| K[Audit Agent]
+    K -->|append-only log| L[MongoDB\naudit_log]
+
+    I --> M[Frontend Dashboard]
+    M -->|HITL approval| N[governance-service]
+    N --> L

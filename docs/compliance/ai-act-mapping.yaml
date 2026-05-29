@@ -1,0 +1,68 @@
+# AI Act mapping — CCI/AVCS
+# Reg. UE 2024/1689 — sistema ad alto rischio (Allegato III, §5b: decisioni finanziarie e compliance)
+
+system: CCI/AVCS
+classification: high_risk
+regulation: EU AI Act 2024/1689
+last_updated: "2026-05-29"
+status: draft
+
+articles:
+  - id: art_9
+    title: "Sistema di gestione dei rischi"
+    requirement: "Identificazione e mitigazione dei rischi residui del sistema AI"
+    status: planned
+    implementation:
+      - "docs/compliance/risk-assessment.md (da creare)"
+      - "Metodologia ISO 31000-like"
+    evidence: []
+
+  - id: art_10
+    title: "Governance dei dati di addestramento e operativi"
+    requirement: "Pratiche di governance dei dati, qualità input, tracciabilità dataset"
+    status: partial
+    implementation:
+      - "PII pseudonimizzazione in libs/cci-llm/src/cci_llm/pii_redaction.py"
+      - "Data lineage via audit log (services/governance)"
+      - "NER-based PII detection in ingestion pipeline"
+    evidence: []
+
+  - id: art_12
+    title: "Conservazione dei registri (record keeping)"
+    requirement: "Audit log automatico di ogni operazione rilevante del sistema AI"
+    status: in_progress
+    implementation:
+      - "services/governance/src/cci_governance/audit_log.py — append-only + hash chain SHA-256"
+      - "MongoDB insert-only role su cci_governance.audit_log"
+      - "scripts/verify_audit_chain.py"
+    evidence: []
+
+  - id: art_13
+    title: "Trasparenza e fornitura di informazioni agli utenti"
+    requirement: "Ogni output deve esporre model_version, prompt_version, confidence, sources[]"
+    status: in_progress
+    implementation:
+      - "Citation enforcement obbligatorio (ADR-0003)"
+      - "Struttura output: sources[], confidence, reasoning_steps[], model_version, prompt_version"
+      - "libs/cci-llm/src/cci_llm/citation_parser.py"
+    evidence: []
+
+  - id: art_14
+    title: "Supervisione umana (human oversight)"
+    requirement: "Hard gate per azioni con impatto > soglia; motivazione obbligatoria"
+    status: in_progress
+    implementation:
+      - "services/governance/src/cci_governance/hitl.py"
+      - "HITL_IMPACT_THRESHOLD_EUR via env var"
+      - "POST /decisions/{id}/approve|reject con motivation (min 20 char)"
+    evidence: []
+
+  - id: art_15
+    title: "Accuratezza, robustezza e cybersecurity"
+    requirement: "Suite di test di regressione su scenari di incoerenza nota"
+    status: planned
+    implementation:
+      - "tests/e2e/test_hera_cloud_scenario.py"
+      - "tests/e2e/test_grounding_enforcement.py"
+      - "KPI: precision > 80%, recall > 75%, hallucination < 1%"
+    evidence: []

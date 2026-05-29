@@ -1,0 +1,51 @@
+domain: aou_clinical
+version: 0.1.0
+description: "Ontologia verticale AOU Modena — compliance clinica e sperimentazioni"
+
+entities:
+  - name: ClinicalTrial
+    properties:
+      - name: trial_id
+        type: string
+        required: true
+      - name: sponsor
+        type: string
+        required: true
+      - name: phase
+        type: string
+        required: true
+      - name: start_date
+        type: date
+        required: true
+      - name: end_date
+        type: date
+        required: false
+
+  - name: EthicsApproval
+    properties:
+      - name: approval_ref
+        type: string
+        required: true
+      - name: issued_by
+        type: string
+        required: true
+      - name: valid_from
+        type: date
+        required: true
+      - name: valid_to
+        type: date
+        required: true
+
+relations:
+  - type: APPROVED_BY
+    from: ClinicalTrial
+    to: EthicsApproval
+    temporal: true
+
+rules:
+  - id: C001
+    description: "Ogni sperimentazione clinica attiva deve avere un'approvazione etica valida"
+    when: "ClinicalTrial.status = 'ACTIVE' AND NOT exists(EthicsApproval WHERE valid_from <= today() AND valid_to >= today())"
+    severity: CRITICAL
+    domain: regulatory
+    article_ref: "D.Lgs. 211/2003, art. 3"

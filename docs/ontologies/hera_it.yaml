@@ -1,0 +1,87 @@
+domain: hera_it
+version: 1.0.0
+description: "Ontologia verticale Hera Group — IT Cloud & Compliance"
+
+entities:
+  - name: CloudCommitment
+    properties:
+      - name: provider
+        type: string
+        required: true
+      - name: amount_eur
+        type: float
+        required: true
+      - name: period_start
+        type: date
+        required: true
+      - name: period_end
+        type: date
+        required: true
+      - name: contract_ref
+        type: string
+        required: false
+
+  - name: ISO27001Certification
+    properties:
+      - name: issuer
+        type: string
+        required: true
+      - name: valid_from
+        type: date
+        required: true
+      - name: valid_to
+        type: date
+        required: true
+      - name: scope
+        type: string
+        required: true
+      - name: version
+        type: string
+        required: false
+
+  - name: BudgetApproval
+    properties:
+      - name: year
+        type: int
+        required: true
+      - name: amount_eur
+        type: float
+        required: true
+      - name: approved_by
+        type: string
+        required: true
+      - name: approval_date
+        type: date
+        required: true
+      - name: category
+        type: string
+        required: true
+
+relations:
+  - type: COVERED_BY
+    from: CloudCommitment
+    to: BudgetApproval
+    temporal: true
+    properties:
+      - name: coverage_pct
+        type: float
+
+  - type: REQUIRES_CERTIFICATION
+    from: CloudCommitment
+    to: ISO27001Certification
+    temporal: true
+
+rules:
+  - id: R001
+    description: "Il commitment cloud non deve superare il budget approvato per l'anno"
+    when: "CloudCommitment.amount_eur > sum(BudgetApproval.amount_eur WHERE year=year(CloudCommitment.period_start))"
+    severity: HIGH
+    domain: financial
+    article_ref: "Linee Guida HERA DSI §4.2"
+
+  - id: R002
+    description: "La certificazione ISO 27001 deve essere valida per l'intero periodo del commitment cloud"
+    when: "NOT exists(ISO27001Certification WHERE valid_from <= CloudCommitment.period_start AND valid_to >= CloudCommitment.period_end)"
+    severity: CRITICAL
+    domain: compliance
+    article_ref: "ISO/IEC 27001:2022 §6.1"

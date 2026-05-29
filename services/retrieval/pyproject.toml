@@ -1,0 +1,34 @@
+[project]
+name = "cci-retrieval"
+version = "0.1.0"
+description = "CCI/AVCS retrieval module — hybrid search, RRF, reranking, Redis cache"
+requires-python = ">=3.12"
+dependencies = [
+    "cci-common",
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.29",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.2",
+    "qdrant-client>=1.9",
+    "rank-bm25>=0.2.2",
+    "sentence-transformers>=3.0",
+    "redis>=5.0",
+    "prometheus-fastapi-instrumentator>=7.0",
+    "structlog>=24.1",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.2",
+    "pytest-asyncio>=0.23",
+    "httpx>=0.27",
+    "testcontainers[qdrant,redis]>=4.5",
+    "coverage>=7.5",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cci_retrieval"]

@@ -1,0 +1,37 @@
+---
+title: CCI/AVCS — C4 Container Diagram
+---
+C4Container
+    title CCI/AVCS — Container View
+
+    Person(user, "Utente (CFO / Analyst)")
+
+    Container(frontend, "Frontend", "Next.js 16.2 + shadcn/ui", "Dashboard incoerenze, HITL queue, audit viewer")
+    Container(ingestion, "ingestion-service", "FastAPI + Python 3.12", "Upload documenti, parsing, NER, chunking, embedding")
+    Container(knowledge, "knowledge-service", "FastAPI + Python 3.12", "Gestione vector store, KG temporale, time-series")
+    Container(retrieval, "retrieval-service", "FastAPI + Python 3.12", "Hybrid search RRF, reranking, cache Redis")
+    Container(coherence, "coherence-service", "FastAPI + Python 3.12", "Motore regole deterministico, ontology loader")
+    Container(agents, "agent-orchestrator", "FastAPI + LangGraph", "Planner→Retriever→Verifier→Generator→Audit")
+    Container(governance, "governance-service", "FastAPI + Python 3.12", "Audit log immutabile, HITL API, AI Act manifest")
+
+    ContainerDb(qdrant, "Qdrant", "Vector DB", "Chunk embeddings per bounded context")
+    ContainerDb(neo4j, "Neo4j 5.x", "Graph DB", "Temporal Knowledge Graph")
+    ContainerDb(mongodb, "MongoDB 7.x", "Document DB", "Operational data, audit log append-only, LangGraph checkpoints")
+    ContainerDb(redis, "Redis 7", "Cache / Streams", "Session, cache retrieval, event backbone")
+    ContainerDb(minio, "MinIO", "Object Storage", "Documenti originali S3-compatible")
+
+    Rel(user, frontend, "HTTPS")
+    Rel(frontend, agents, "REST API", "OpenAPI")
+    Rel(frontend, governance, "REST API", "OpenAPI")
+    Rel(ingestion, qdrant, "Upsert chunks")
+    Rel(ingestion, neo4j, "Insert entities/relations")
+    Rel(ingestion, redis, "Publish CloudEvent")
+    Rel(ingestion, minio, "Store raw docs")
+    Rel(agents, retrieval, "REST")
+    Rel(agents, coherence, "REST")
+    Rel(agents, governance, "REST — audit append")
+    Rel(agents, mongodb, "LangGraph checkpoints")
+    Rel(retrieval, qdrant, "Hybrid search")
+    Rel(retrieval, redis, "Cache TTL")
+    Rel(coherence, neo4j, "Cypher temporal queries")
+    Rel(governance, mongodb, "Append-only insert")

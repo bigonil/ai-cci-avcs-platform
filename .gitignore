@@ -1,0 +1,42 @@
+# Secrets — mai committare
+.env
+*.pem
+*.key
+infra/docker/mongodb-keyfile
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+dist/
+build/
+*.egg-info/
+.venv/
+.uv/
+
+# Node / Frontend
+node_modules/
+.next/
+frontend/.next/
+frontend/node_modules/
+frontend/out/
+
+# Docker override locale
+docker-compose.override.yml
+
+# IDE
+.idea/
+.vscode/settings.json
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Demo output
+demo_output/

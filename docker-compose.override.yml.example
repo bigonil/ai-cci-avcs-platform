@@ -1,0 +1,13 @@
+# Copia in docker-compose.override.yml per personalizzazioni locali.
+# NON committare docker-compose.override.yml.
+
+services:
+  ingestion:
+    build:
+      context: services/ingestion
+    volumes:
+      - ./services/ingestion/src:/app/src  # hot-reload in sviluppo
+
+  agents:
+    environment:
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}

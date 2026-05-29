@@ -1,0 +1,48 @@
+domain: semsotec_product
+version: 0.1.0
+description: "Ontologia verticale SEMSOTEC — compliance prodotto industriale e certificazioni"
+
+entities:
+  - name: Product
+    properties:
+      - name: product_id
+        type: string
+        required: true
+      - name: category
+        type: string
+        required: true
+      - name: manufacturer
+        type: string
+        required: true
+
+  - name: ProductCertification
+    properties:
+      - name: cert_type
+        type: string
+        required: true
+      - name: issuer
+        type: string
+        required: true
+      - name: valid_from
+        type: date
+        required: true
+      - name: valid_to
+        type: date
+        required: true
+      - name: standard_ref
+        type: string
+        required: true
+
+relations:
+  - type: CERTIFIED_BY
+    from: Product
+    to: ProductCertification
+    temporal: true
+
+rules:
+  - id: P001
+    description: "Ogni prodotto commercializzato deve avere certificazione valida"
+    when: "Product.status = 'ON_MARKET' AND NOT exists(ProductCertification WHERE valid_from <= today() AND valid_to >= today())"
+    severity: HIGH
+    domain: compliance
+    article_ref: "Dir. 2006/42/CE"
