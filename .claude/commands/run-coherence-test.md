@@ -8,15 +8,29 @@ Esegue i demo scenario end-to-end della Coherence Engine sui sei domini pilota C
 
 ## Modalità di esecuzione
 
-### Modalità 1 — In-process (Hera only, senza Docker)
+### Modalità 1 — In-process tutti i domini (senza Docker)
 
-Non richiede lo stack attivo. Esegue il CoherenceEngine direttamente in Python:
+Non richiede lo stack attivo. Esegue il CoherenceEngine direttamente in Python su tutti e 6 i domini:
 
+```bash
+# Tutti e 6 i domini in sequenza (zero LLM, zero Docker)
+uv run python scripts/run_all_coherence_test.py
+
+# Dominio singolo
+uv run python scripts/run_all_coherence_test.py --domain hera_it
+uv run python scripts/run_all_coherence_test.py --domain aou_clinical
+uv run python scripts/run_all_coherence_test.py --domain semsotec_product
+uv run python scripts/run_all_coherence_test.py --domain ducati_corse
+uv run python scripts/run_all_coherence_test.py --domain dallara
+uv run python scripts/run_all_coherence_test.py --domain prada
+```
+
+Output atteso: 13 incoerenze rilevate su 19 fixture, tutte con evidence chunks, in < 700ms.
+
+Per Hera-only (script originale):
 ```bash
 uv run python scripts/run_coherence_test.py
 ```
-
-Output atteso: valutazione regole R001–R004 su fixture Hera Q1 2026, con evidence chunks e tempi.
 
 ---
 

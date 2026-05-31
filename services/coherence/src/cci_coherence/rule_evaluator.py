@@ -268,8 +268,17 @@ def evaluate_rule(
 
     if domain == "hera_it":
         return _evaluate_hera_rule(rule_id, when_expr, severity, pattern, ctx)
+    if domain == "aou_clinical":
+        return _evaluate_aou_rule(rule_id, severity, ctx)
+    if domain == "semsotec_product":
+        return _evaluate_semsotec_rule(rule_id, severity, ctx)
+    if domain == "ducati_corse":
+        return _evaluate_ducati_rule(rule_id, severity, ctx)
+    if domain == "dallara":
+        return _evaluate_dallara_rule(rule_id, severity, ctx)
+    if domain == "prada":
+        return _evaluate_prada_rule(rule_id, severity, ctx)
 
-    # Generic fallback — try to evaluate based on pattern alone
     log.warning("no_domain_dispatcher", domain=domain, rule_id=rule_id)
     return []
 
@@ -327,3 +336,278 @@ def _evaluate_hera_rule(
 
     log.warning("unknown_hera_rule", rule_id=rule_id)
     return []
+
+
+# ---------------------------------------------------------------------------
+# AOU Clinical — C001
+# ---------------------------------------------------------------------------
+
+def _evaluate_aou_rule(
+    rule_id: str,
+    severity: str,
+    ctx: EvaluationContext,
+) -> list[RuleViolation]:
+    today = date.today().isoformat()
+    violations: list[RuleViolation] = []
+
+    if rule_id == "C001":
+        # ACTIVE trial must have a valid ethics approval (valid_to >= today)
+        for trial in ctx.get("ClinicalTrial"):
+            approvals = ctx.get("EthicsApproval")
+            valid_approvals = [
+                a for a in approvals
+                if a.get_date_str("valid_to") and a.get_date_str("valid_to") >= today
+            ]
+            if not valid_approvals:
+                # Find best evidence: the expired approval if available
+                expired = approvals[0] if approvals else None
+                all_chunks = list(trial.chunk_ids)
+                if expired:
+                    all_chunks.extend(expired.chunk_ids)
+                expiry = expired.get_date_str("valid_to") if expired else "N/A"
+                violations.append(RuleViolation(
+                    rule_id=rule_id,
+                    entity_a=trial,
+                    entity_b=expired,
+                    description=(
+                        f"ClinicalTrial({trial.get_str('trial_id')}, ACTIVE) — "
+                        f"EthicsApproval expired {expiry}, no valid renewal as of {today}"
+                    ),
+                    severity=severity,
+                    evidence_chunks=list(dict.fromkeys(all_chunks)),
+                    computed_values={"trial_id": trial.get_str("trial_id"), "expired_approval": expiry, "today": today},
+                ))
+    return violations
+
+
+# ---------------------------------------------------------------------------
+# SEMSOTEC — P001
+# ---------------------------------------------------------------------------
+
+def _evaluate_semsotec_rule(
+    rule_id: str,
+    severity: str,
+    ctx: EvaluationContext,
+) -> list[RuleViolation]:
+    today = date.today().isoformat()
+    violations: list[RuleViolation] = []
+
+    if rule_id == "P001":
+        # ON_MARKET product must have a valid cert (valid_to >= today)
+        for product in ctx.get("Product"):
+            certs = ctx.get("ProductCertification")
+            valid_certs = [
+                c for c in certs
+                if c.get_date_str("valid_to") and c.get_date_str("valid_to") >= today
+            ]
+            if not valid_certs:
+                expired = certs[0] if certs else None
+                all_chunks = list(product.chunk_ids)
+                if expired:
+                    all_chunks.extend(expired.chunk_ids)
+                expiry = expired.get_date_str("valid_to") if expired else "N/A"
+                violations.append(RuleViolation(
+                    rule_id=rule_id,
+                    entity_a=product,
+                    entity_b=expired,
+                    description=(
+                        f"Product({product.get_str('product_id')}, ON_MARKET) — "
+                        f"ProductCertification expired {expiry}, no valid cert as of {today}"
+                    ),
+                    severity=severity,
+                    evidence_chunks=list(dict.fromkeys(all_chunks)),
+                    computed_values={"product_id": product.get_str("product_id"), "expired_cert": expiry, "today": today},
+                ))
+    return violations
+
+
+# ---------------------------------------------------------------------------
+# Ducati Corse — DC001, DC002, DC003
+# ---------------------------------------------------------------------------
+
+def _evaluate_ducati_rule(
+    rule_id: str,
+    severity: str,
+    ctx: EvaluationContext,
+) -> list[RuleViolation]:
+    today = date.today().isoformat()
+    violations: list[RuleViolation] = []
+
+    if rule_id == "DC001":
+        # IN_RACE component must have valid homologation covering the full season
+        for comp in ctx.get("RaceComponent"):
+            season = comp.get_str("season")  # e.g. "2026"
+            season_end = f"{season}-12-31"
+            certs = ctx.get("HomologationCertificate")
+            valid_certs = [
+                c for c in certs
+                if c.get_date_str("valid_to") and c.get_date_str("valid_to") >= season_end
+            ]
+            if not valid_certs:
+                expired = certs[0] if certs else None
+                all_chunks = list(comp.chunk_ids)
+                if expired:
+                    all_chunks.extend(expired.chunk_ids)
+                expiry = expired.get_date_str("valid_to") if expired else "N/A"
+                violations.append(RuleViolation(
+                    rule_id=rule_id,
+                    entity_a=comp,
+                    entity_b=expired,
+                    description=(
+                        f"RaceComponent({comp.get_str('component_id')}, IN_RACE, season={season}) — "
+                        f"HomologationCertificate valid_to={expiry} < season_end={season_end}"
+                    ),
+                    severity=severity,
+                    evidence_chunks=list(dict.fromkeys(all_chunks)),
+                    computed_values={"component_id": comp.get_str("component_id"), "cert_valid_to": expiry, "season_end": season_end},
+                ))
+
+    elif rule_id == "DC002":
+        # declared_amount_eur > cap_limit_eur
+        for decl in ctx.get("BudgetCapDeclaration"):
+            declared = decl.get_float("declared_amount_eur")
+            cap = decl.get_float("cap_limit_eur")
+            if declared > cap:
+                delta = declared - cap
+                pct = (delta / cap * 100) if cap else 0.0
+                violations.append(RuleViolation(
+                    rule_id=rule_id,
+                    entity_a=decl,
+                    entity_b=None,
+                    description=(
+                        f"BudgetCapDeclaration(season={decl.get_str('season')}) — "
+                        f"declared={declared:,.0f} EUR > cap={cap:,.0f} EUR "
+                        f"(+{delta:,.0f} EUR, +{pct:.1f}%)"
+                    ),
+                    severity=severity,
+                    evidence_chunks=list(decl.chunk_ids),
+                    computed_values={"declared": declared, "cap": cap, "delta": delta, "pct": pct},
+                ))
+
+    elif rule_id == "DC003":
+        # tokens_remaining = 0 (all tokens consumed — zero development margin)
+        for alloc in ctx.get("DevelopmentTokenAllocation"):
+            remaining = alloc.get_float("tokens_remaining")
+            used = alloc.get_float("tokens_used")
+            total = alloc.get_float("total_tokens")
+            if remaining <= 0:
+                violations.append(RuleViolation(
+                    rule_id=rule_id,
+                    entity_a=alloc,
+                    entity_b=None,
+                    description=(
+                        f"DevelopmentTokenAllocation(season={alloc.get_str('season')}) — "
+                        f"tokens_used={int(used)}/{int(total)}, remaining={int(remaining)} — "
+                        f"zero development margin"
+                    ),
+                    severity=severity,
+                    evidence_chunks=list(alloc.chunk_ids),
+                    computed_values={"used": used, "total": total, "remaining": remaining},
+                ))
+
+    return violations
+
+
+# ---------------------------------------------------------------------------
+# Dallara — DA001
+# ---------------------------------------------------------------------------
+
+def _evaluate_dallara_rule(
+    rule_id: str,
+    severity: str,
+    ctx: EvaluationContext,
+) -> list[RuleViolation]:
+    today = date.today().isoformat()
+    violations: list[RuleViolation] = []
+
+    if rule_id == "DA001":
+        # IN_COMPETITION vehicle must have valid crash test cert covering current date
+        for vehicle in ctx.get("Vehicle"):
+            certs = ctx.get("CrashTestCertification")
+            valid_certs = [
+                c for c in certs
+                if c.get_date_str("valid_to") and c.get_date_str("valid_to") >= today
+            ]
+            if not valid_certs:
+                expired = certs[0] if certs else None
+                all_chunks = list(vehicle.chunk_ids)
+                if expired:
+                    all_chunks.extend(expired.chunk_ids)
+                expiry = expired.get_date_str("valid_to") if expired else "N/A"
+                violations.append(RuleViolation(
+                    rule_id=rule_id,
+                    entity_a=vehicle,
+                    entity_b=expired,
+                    description=(
+                        f"Vehicle({vehicle.get_str('vehicle_id')}, IN_COMPETITION) — "
+                        f"CrashTestCertification expired {expiry}, no valid cert as of {today}"
+                    ),
+                    severity=severity,
+                    evidence_chunks=list(dict.fromkeys(all_chunks)),
+                    computed_values={"vehicle_id": vehicle.get_str("vehicle_id"), "cert_valid_to": expiry, "today": today},
+                ))
+    return violations
+
+
+# ---------------------------------------------------------------------------
+# Prada — PR002, PR003
+# ---------------------------------------------------------------------------
+
+def _evaluate_prada_rule(
+    rule_id: str,
+    severity: str,
+    ctx: EvaluationContext,
+) -> list[RuleViolation]:
+    today = date.today().isoformat()
+    violations: list[RuleViolation] = []
+
+    if rule_id == "PR002":
+        # Tier-1 supplier with PENDING ethical audit status
+        for supplier in ctx.get("Supplier"):
+            if supplier.get_float("tier") == 1.0:
+                audit_status = supplier.get_str("ethical_audit_status")
+                if audit_status in ("PENDING", "NON_COMPLIANT", ""):
+                    violations.append(RuleViolation(
+                        rule_id=rule_id,
+                        entity_a=supplier,
+                        entity_b=None,
+                        description=(
+                            f"Supplier({supplier.get_str('name')}, tier=1) — "
+                            f"ethical_audit_status={audit_status or 'MISSING'}"
+                        ),
+                        severity=severity,
+                        evidence_chunks=list(supplier.chunk_ids),
+                        computed_values={"supplier": supplier.get_str("name"), "audit_status": audit_status},
+                    ))
+
+    elif rule_id == "PR003":
+        # Tier-1 supplier with expired material certification
+        for cert in ctx.get("MaterialCertification"):
+            if cert.properties.get("expired"):
+                valid_to = cert.get_date_str("valid_to") or "N/A"
+                # Find the matching supplier
+                supplier_name = cert.get_str("supplier_name")
+                matching = [
+                    s for s in ctx.get("Supplier")
+                    if s.get_str("name").startswith(supplier_name[:10])
+                    and s.get_float("tier") == 1.0
+                ]
+                supplier = matching[0] if matching else None
+                all_chunks = list(cert.chunk_ids)
+                if supplier:
+                    all_chunks.extend(supplier.chunk_ids)
+                violations.append(RuleViolation(
+                    rule_id=rule_id,
+                    entity_a=cert,
+                    entity_b=supplier,
+                    description=(
+                        f"Supplier({supplier_name}, tier=1) — "
+                        f"MaterialCertification({cert.get_str('cert_id')}) expired {valid_to}, "
+                        f"production in {today[:4]}"
+                    ),
+                    severity=severity,
+                    evidence_chunks=list(dict.fromkeys(all_chunks)),
+                    computed_values={"cert_id": cert.get_str("cert_id"), "valid_to": valid_to, "production_year": today[:4]},
+                ))
+
+    return violations

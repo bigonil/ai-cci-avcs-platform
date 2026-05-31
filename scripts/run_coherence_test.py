@@ -11,6 +11,10 @@ import sys
 import time
 import json
 
+# Force UTF-8 on Windows consoles (default cp1252 can't encode arrow/box chars).
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 # Aggiungi i src paths al PYTHONPATH (monorepo workspace)
 _REPO = pathlib.Path(__file__).parent.parent
 for _src in [
