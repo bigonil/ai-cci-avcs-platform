@@ -1,7 +1,7 @@
 .PHONY: help install lint format typecheck test test-integration test-live test-e2e \
-        coverage up down build logs \
+        coverage up up-obs down build logs \
         demo demo-all demo-hera demo-aou demo-semsotec demo-ducati demo-dallara demo-prada \
-        demo-dry-run verify-audit pre-commit clean
+        demo-dry-run verify-audit pre-commit clean mem-check
 
 PYTHON   := python3
 UV       := uv
@@ -58,8 +58,14 @@ coverage: ## Report coverage HTML
 # Infrastruttura
 # ---------------------------------------------------------------------------
 
-up: ## Avvia infrastruttura docker-compose
+up: ## Avvia stack core (≤ 2.65 GB RAM, senza observability)
 	$(COMPOSE) up -d
+	@echo "Waiting for services..."
+	@sleep 5
+	$(COMPOSE) ps
+
+up-obs: ## Avvia stack core + observability (≤ 2.95 GB RAM — Prometheus, Grafana, Tempo)
+	$(COMPOSE) --profile observability up -d
 	@echo "Waiting for services..."
 	@sleep 5
 	$(COMPOSE) ps
@@ -72,6 +78,10 @@ build: ## Build immagini Docker dei servizi
 
 logs: ## Segui i log di tutti i servizi
 	$(COMPOSE) logs -f
+
+mem-check: ## Mostra RAM usata da ogni container (richiede stack attivo)
+	@docker stats --no-stream --format "table {{.Name}}\t{{.MemUsage}}\t{{.MemPerc}}" \
+		2>/dev/null | sort -k2 -rh || echo "Stack non attivo — esegui make up"
 
 # ---------------------------------------------------------------------------
 # Demo scenari — tutti i domini verticali

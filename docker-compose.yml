@@ -1,13 +1,16 @@
 services:
   # ---------------------------------------------------------------------------
   # CCI / AVCS — Infra completa (Step 3)
+  # Memory budget: core stack ≤ 2.65 GB, with --profile observability ≤ 2.95 GB
   # ---------------------------------------------------------------------------
 
   # --- Infrastructure --------------------------------------------------------
 
   mongodb:
     image: mongo:7.0
-    command: ["--replSet", "rs0", "--keyFile", "/etc/mongodb/pki/keyfile", "--bind_ip_all"]
+    # --wiredTigerCacheSizeGB 0.2 caps the WiredTiger in-memory cache (dev).
+    # Without this flag the default is 50% of (host RAM - 1GB).
+    command: ["--replSet", "rs0", "--keyFile", "/etc/mongodb/pki/keyfile", "--bind_ip_all", "--wiredTigerCacheSizeGB", "0.2"]
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_ROOT_USERNAME:-root}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD:-changeme}
@@ -26,15 +29,20 @@ services:
       retries: 5
       start_period: 30s
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 350M
 
   neo4j:
     image: neo4j:5.20-community
     environment:
       NEO4J_AUTH: ${NEO4J_USERNAME:-neo4j}/${NEO4J_PASSWORD:-changeme}
       NEO4J_PLUGINS: '["apoc"]'
-      NEO4J_dbms_memory_pagecache_size: 512M
-      NEO4J_dbms_memory_heap_initial__size: 512M
-      NEO4J_dbms_memory_heap_max__size: 1G
+      # Reduced from 512M/1G/512M to fit the 3GB stack budget (dev).
+      NEO4J_dbms_memory_pagecache_size: 128M
+      NEO4J_dbms_memory_heap_initial__size: 128M
+      NEO4J_dbms_memory_heap_max__size: 256M
     volumes:
       - neo4j_data:/data
       - neo4j_logs:/logs
@@ -50,6 +58,10 @@ services:
       retries: 5
       start_period: 60s
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 420M
 
   qdrant:
     image: qdrant/qdrant:v1.9.2
@@ -66,10 +78,15 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 200M
 
   redis:
     image: redis:7.2-alpine
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    # maxmemory reduced from 256mb to 64mb — adequate for session cache + LangGraph checkpoints in dev.
+    command: redis-server --appendonly yes --maxmemory 64mb --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
     ports:
@@ -82,6 +99,10 @@ services:
       timeout: 3s
       retries: 5
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 80M
 
   minio:
     image: minio/minio:latest
@@ -102,6 +123,10 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
 
   # --- CCI Services -----------------------------------------------------------
 
@@ -132,6 +157,10 @@ services:
       retries: 5
       start_period: 30s
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
 
   retrieval:
     build:
@@ -163,6 +192,12 @@ services:
       retries: 5
       start_period: 60s
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          # all-mpnet-base-v2 loads ~420 MB into memory; 600M provides margin for
+          # the reranker model and FastAPI worker overhead.
+          memory: 600M
 
   knowledge:
     build:
@@ -200,6 +235,10 @@ services:
       retries: 5
       start_period: 30s
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
 
   agents:
     build:
@@ -238,6 +277,10 @@ services:
       retries: 5
       start_period: 60s
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 160M
 
   governance:
     build:
@@ -262,6 +305,10 @@ services:
       retries: 5
       start_period: 30s
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 96M
 
   coherence:
     build:
@@ -291,6 +338,10 @@ services:
       retries: 5
       start_period: 30s
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 96M
 
   # --- Frontend ---------------------------------------------------------------
 
@@ -320,11 +371,18 @@ services:
       retries: 5
       start_period: 30s
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 224M
 
-  # --- Observability ----------------------------------------------------------
+  # --- Observability (opt-in: docker compose --profile observability up) ------
+  # These three services add ~304 MB to the stack total.
+  # Run with: make up-obs  OR  docker compose --profile observability up -d
 
   prometheus:
     image: prom/prometheus:v2.51.2
+    profiles: [observability]
     volumes:
       - ./infra/docker/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
@@ -333,9 +391,14 @@ services:
     networks:
       - cci-observability
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 128M
 
   grafana:
     image: grafana/grafana:10.4.2
+    profiles: [observability]
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
       GF_PATHS_PROVISIONING: /etc/grafana/provisioning
@@ -349,9 +412,14 @@ services:
     depends_on:
       - prometheus
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 96M
 
   tempo:
     image: grafana/tempo:2.4.2
+    profiles: [observability]
     command: ["-config.file=/etc/tempo.yaml"]
     volumes:
       - ./infra/docker/tempo.yaml:/etc/tempo.yaml:ro
@@ -362,6 +430,10 @@ services:
     networks:
       - cci-observability
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 80M
 
 # -----------------------------------------------------------------------------
 # Volumes
