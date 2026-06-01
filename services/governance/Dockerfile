@@ -1,16 +1,14 @@
 FROM python:3.12-slim AS builder
 
-WORKDIR /build
+COPY --from=ghcr.io/astral-sh/uv:0.4.18 /uv /usr/local/bin/uv
 
-RUN pip install uv
+WORKDIR /workspace
 
-COPY libs/cci-common /build/libs/cci-common
-COPY services/governance /build/services/governance
+COPY pyproject.toml uv.lock ./
+COPY libs/cci-common ./libs/cci-common
+COPY services/governance ./services/governance
 
-RUN uv pip install --system --no-cache /build/libs/cci-common
-
-WORKDIR /build/services/governance
-RUN uv pip install --system --no-cache .
+RUN uv sync --package cci-governance --no-dev --no-editable
 
 # ---------------------------------------------------------------------------
 FROM python:3.12-slim
@@ -20,10 +18,12 @@ LABEL org.opencontainers.image.description="CCI/AVCS Governance — immutable au
 
 WORKDIR /app
 
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY --from=builder /build/services/governance/src /app/src
+COPY --from=builder /workspace/.venv /app/.venv
 
-ENV PYTHONPATH=/app/src
+ENV VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
 
 EXPOSE 8005
 

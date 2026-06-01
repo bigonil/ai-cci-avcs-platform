@@ -1,39 +1,32 @@
 FROM python:3.12-slim AS builder
 
-RUN pip install uv
-WORKDIR /build
+COPY --from=ghcr.io/astral-sh/uv:0.4.18 /uv /usr/local/bin/uv
 
-COPY pyproject.toml ./
-COPY src/ ./src/
+WORKDIR /workspace
 
-# Install production deps into /app/venv
-RUN uv venv /app/venv && \
-    uv pip install --python /app/venv/bin/python --no-cache \
-      fastapi uvicorn[standard] pydantic pydantic-settings \
-      qdrant-client neo4j motor pyyaml \
-      prometheus-fastapi-instrumentator structlog \
-      redis
+COPY pyproject.toml uv.lock ./
+COPY libs/cci-common ./libs/cci-common
+COPY services/knowledge ./services/knowledge
 
-# Install cci-common from workspace root (mounted at build time)
-COPY libs/cci-common/ /build/cci-common/
-RUN uv pip install --python /app/venv/bin/python /build/cci-common
+RUN uv sync --package cci-knowledge --no-dev --no-editable
 
-# Install service itself
-RUN uv pip install --python /app/venv/bin/python --no-deps .
-
-
+# ---------------------------------------------------------------------------
 FROM python:3.12-slim AS runtime
 
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PATH="/app/venv/bin:$PATH"
+LABEL org.opencontainers.image.title="cci-knowledge"
+LABEL org.opencontainers.image.description="CCI/AVCS Knowledge — vector store, temporal KG, time-series"
 
 WORKDIR /app
-COPY --from=builder /app/venv /app/venv
-COPY --from=builder /build/src /app/src
 
-# Ontology files are mounted at runtime via docker-compose volume
+COPY --from=builder /workspace/.venv /app/.venv
+
 RUN mkdir -p /app/ontologies
+
+ENV VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    ONTOLOGIES_PATH=/app/ontologies
 
 EXPOSE 8001
 

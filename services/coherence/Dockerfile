@@ -1,14 +1,16 @@
 FROM python:3.12-slim AS builder
 
-WORKDIR /build
+COPY --from=ghcr.io/astral-sh/uv:0.4.18 /uv /usr/local/bin/uv
 
-RUN pip install uv
+WORKDIR /workspace
 
-COPY pyproject.toml .
-COPY src/ src/
+# Workspace root — needed for uv to resolve workspace member sources
+COPY pyproject.toml uv.lock ./
+COPY libs/cci-common ./libs/cci-common
+COPY services/coherence ./services/coherence
 
-# Install runtime deps only (no test extras)
-RUN uv pip install --system --no-cache .
+# Install the service and its runtime deps as wheels (self-contained venv)
+RUN uv sync --package cci-coherence --no-dev --no-editable
 
 # ---------------------------------------------------------------------------
 FROM python:3.12-slim
@@ -18,12 +20,13 @@ LABEL org.opencontainers.image.description="CCI/AVCS Coherence Engine — determ
 
 WORKDIR /app
 
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY --from=builder /build/src /app/src
+COPY --from=builder /workspace/.venv /app/.venv
 
-# Ontology files mounted at /app/ontologies via docker-compose volume
-ENV PYTHONPATH=/app/src
-ENV ONTOLOGIES_PATH=/app/ontologies
+ENV VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    ONTOLOGIES_PATH=/app/ontologies
 
 EXPOSE 8003
 

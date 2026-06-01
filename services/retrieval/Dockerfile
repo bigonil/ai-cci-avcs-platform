@@ -1,40 +1,34 @@
 FROM python:3.12-slim AS builder
 
-RUN pip install uv
-WORKDIR /build
+COPY --from=ghcr.io/astral-sh/uv:0.4.18 /uv /usr/local/bin/uv
 
-COPY pyproject.toml ./
-COPY src/ ./src/
+WORKDIR /workspace
 
-# Install production deps
-RUN uv venv /app/venv && \
-    uv pip install --python /app/venv/bin/python --no-cache \
-      fastapi uvicorn[standard] pydantic pydantic-settings \
-      qdrant-client rank-bm25 sentence-transformers \
-      redis prometheus-fastapi-instrumentator structlog
+COPY pyproject.toml uv.lock ./
+COPY libs/cci-common ./libs/cci-common
+COPY services/retrieval ./services/retrieval
 
-# Install cci-common from workspace root
-COPY libs/cci-common/ /build/cci-common/
-RUN uv pip install --python /app/venv/bin/python /build/cci-common
+RUN UV_HTTP_TIMEOUT=300 uv sync --package cci-retrieval --no-dev --no-editable
 
-# Install service
-RUN uv pip install --python /app/venv/bin/python --no-deps .
-
-
+# ---------------------------------------------------------------------------
 FROM python:3.12-slim AS runtime
 
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PATH="/app/venv/bin:$PATH" \
-    # sentence-transformers model cache inside container
-    TRANSFORMERS_CACHE=/app/.cache \
-    SENTENCE_TRANSFORMERS_HOME=/app/.cache
+LABEL org.opencontainers.image.title="cci-retrieval"
+LABEL org.opencontainers.image.description="CCI/AVCS Retrieval — hybrid search, RRF, reranking, Redis cache"
 
 WORKDIR /app
-COPY --from=builder /app/venv /app/venv
-COPY --from=builder /build/src /app/src
+
+COPY --from=builder /workspace/.venv /app/.venv
 
 RUN mkdir -p /app/.cache
+
+ENV VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    # sentence-transformers model cache (mapped to a named volume in compose)
+    TRANSFORMERS_CACHE=/app/.cache \
+    SENTENCE_TRANSFORMERS_HOME=/app/.cache
 
 EXPOSE 8002
 

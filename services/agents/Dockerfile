@@ -1,21 +1,16 @@
 FROM python:3.12-slim AS builder
 
-WORKDIR /build
+COPY --from=ghcr.io/astral-sh/uv:0.4.18 /uv /usr/local/bin/uv
 
-RUN pip install uv
+WORKDIR /workspace
 
-# Copy workspace packages needed
-COPY libs/cci-common /build/libs/cci-common
-COPY libs/cci-llm /build/libs/cci-llm
-COPY services/agents /build/services/agents
+COPY pyproject.toml uv.lock ./
+# agents depends on both cci-common and cci-llm
+COPY libs/cci-common ./libs/cci-common
+COPY libs/cci-llm ./libs/cci-llm
+COPY services/agents ./services/agents
 
-# Build cci-common and cci-llm wheels first
-RUN uv pip install --system --no-cache /build/libs/cci-common
-RUN uv pip install --system --no-cache /build/libs/cci-llm
-
-# Install agents service
-WORKDIR /build/services/agents
-RUN uv pip install --system --no-cache .
+RUN uv sync --package cci-agents --no-dev --no-editable
 
 # ---------------------------------------------------------------------------
 FROM python:3.12-slim
@@ -25,11 +20,13 @@ LABEL org.opencontainers.image.description="CCI/AVCS Agents — LangGraph 5-node
 
 WORKDIR /app
 
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY --from=builder /build/services/agents/src /app/src
+COPY --from=builder /workspace/.venv /app/.venv
 
-ENV PYTHONPATH=/app/src
-ENV PROMPTS_PATH=/app/prompts/v1
+ENV VIRTUAL_ENV=/app/.venv \
+    PATH="/app/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PROMPTS_PATH=/app/prompts/v1
 
 EXPOSE 8004
 
