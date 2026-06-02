@@ -321,6 +321,7 @@ services:
       NEO4J_DATABASE: neo4j
       CCI_NEO4J_ENABLED: ${CCI_NEO4J_ENABLED:-true}
       ONTOLOGIES_PATH: /app/ontologies
+      FIXTURES_PATH: /app/fixtures
       CCI_COHERENCE_PORT: 8003
     ports:
       - "8003:8003"
@@ -331,6 +332,7 @@ services:
         condition: service_healthy
     volumes:
       - ./docs/ontologies:/app/ontologies:ro
+      - ./tests/fixtures:/app/fixtures:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health/live')"]
       interval: 15s

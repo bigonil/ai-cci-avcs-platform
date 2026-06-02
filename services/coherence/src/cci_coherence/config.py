@@ -32,6 +32,9 @@ class CoherenceSettings(BaseSettings):
         alias="ONTOLOGIES_PATH",
     )
 
+    # Optional fixture files for chunk-based fallback in dev/demo (FIXTURES_PATH env)
+    fixtures_path: pathlib.Path | None = Field(default=None, alias="FIXTURES_PATH")
+
     # Evaluation
     confidence_threshold: float = 0.5
 

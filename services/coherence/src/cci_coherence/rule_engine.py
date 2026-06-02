@@ -57,17 +57,19 @@ class CoherenceEngine:
         domain: str,
         rules: list[dict[str, Any]],
         as_of_date: str | None = None,
-    ) -> list[dict[str, Any]]:
+    ) -> tuple[list[dict[str, Any]], bool]:
         """Evaluate rules against entities indexed in the Neo4j graph.
 
-        Falls back to empty result if graph is unavailable.
+        Returns (violations, graph_had_entities). When graph_had_entities is False
+        the caller should fall back to chunk-based evaluation.
         """
         as_of = as_of_date or date.today().isoformat()
         violations: list[dict[str, Any]] = []
+        graph_had_entities = False
 
         if not self._driver:
             log.warning("graph_unavailable_skip", domain=domain)
-            return violations
+            return violations, False
 
         for rule in rules:
             rule_id: str = rule["rule_id"]
@@ -92,6 +94,7 @@ class CoherenceEngine:
                 log.info("graph_rule_skipped_no_entities", rule_id=rule_id, domain=domain)
                 continue
 
+            graph_had_entities = True
             for v in rule_violations:
                 violations.append(v.to_incoherence_dict(domain))
 
@@ -100,8 +103,9 @@ class CoherenceEngine:
             domain=domain,
             rules_evaluated=len(rules),
             violations=len(violations),
+            graph_had_entities=graph_had_entities,
         )
-        return violations
+        return violations, graph_had_entities
 
     async def verify(
         self,
@@ -116,11 +120,10 @@ class CoherenceEngine:
         """
         as_of = as_of_date or date.today().isoformat()
 
-        # Attempt graph-based evaluation
+        # Attempt graph-based evaluation; fall back to chunks when graph has no entities
         if self._driver and self._settings.neo4j_enabled:
-            graph_violations = await self.verify_graph(domain, rules, as_of)
-            if graph_violations or self._driver:
-                # If graph had entities (even zero violations), prefer it
+            graph_violations, graph_had_entities = await self.verify_graph(domain, rules, as_of)
+            if graph_had_entities:
                 source = "graph"
                 violations = graph_violations
             else:
