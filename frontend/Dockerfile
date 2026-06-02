@@ -1,5 +1,5 @@
 FROM node:20-alpine AS base
-RUN corepack enable pnpm
+RUN npm install -g pnpm@9
 
 # ---- deps stage ----
 FROM base AS deps

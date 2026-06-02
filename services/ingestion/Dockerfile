@@ -14,7 +14,8 @@ COPY pyproject.toml uv.lock ./
 COPY libs/cci-common ./libs/cci-common
 COPY services/ingestion ./services/ingestion
 
-RUN UV_HTTP_TIMEOUT=300 uv sync --package cci-ingestion --no-dev --no-editable
+RUN --mount=type=cache,target=/root/.cache/uv \
+    UV_HTTP_TIMEOUT=300 uv sync --package cci-ingestion --no-dev --no-editable
 
 # Download spaCy Italian model (small, ~12MB) into the venv
 RUN /workspace/.venv/bin/python -m spacy download it_core_news_sm || true

@@ -8,9 +8,9 @@ services:
 
   mongodb:
     image: mongo:7.0
-    # --wiredTigerCacheSizeGB 0.2 caps the WiredTiger in-memory cache (dev).
+    # --wiredTigerCacheSizeGB 0.25 caps the WiredTiger in-memory cache (dev minimum is 0.25).
     # Without this flag the default is 50% of (host RAM - 1GB).
-    command: ["--replSet", "rs0", "--keyFile", "/etc/mongodb/pki/keyfile", "--bind_ip_all", "--wiredTigerCacheSizeGB", "0.2"]
+    command: ["--replSet", "rs0", "--keyFile", "/etc/mongodb/pki/keyfile", "--bind_ip_all", "--wiredTigerCacheSizeGB", "0.25"]
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_ROOT_USERNAME:-root}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD:-changeme}
@@ -25,7 +25,7 @@ services:
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 10s
-      timeout: 5s
+      timeout: 10s
       retries: 5
       start_period: 30s
     restart: unless-stopped
@@ -40,9 +40,9 @@ services:
       NEO4J_AUTH: ${NEO4J_USERNAME:-neo4j}/${NEO4J_PASSWORD:-changeme}
       NEO4J_PLUGINS: '["apoc"]'
       # Reduced from 512M/1G/512M to fit the 3GB stack budget (dev).
-      NEO4J_dbms_memory_pagecache_size: 128M
-      NEO4J_dbms_memory_heap_initial__size: 128M
-      NEO4J_dbms_memory_heap_max__size: 256M
+      NEO4J_server_memory_pagecache_size: 128M
+      NEO4J_server_memory_heap_initial__size: 128M
+      NEO4J_server_memory_heap_max__size: 256M
     volumes:
       - neo4j_data:/data
       - neo4j_logs:/logs
@@ -52,7 +52,7 @@ services:
     networks:
       - cci-backend
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:7474/db/neo4j/cluster/available || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7474 || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 5
@@ -73,7 +73,7 @@ services:
     networks:
       - cci-backend
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:6333/healthz || exit 1"]
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/6333' 2>/dev/null || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -113,8 +113,8 @@ services:
     volumes:
       - minio_data:/data
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "19000:9000"
+      - "19001:9001"
     networks:
       - cci-backend
     healthcheck:
@@ -151,11 +151,11 @@ services:
     volumes:
       - ./docs/ontologies:/app/ontologies:ro
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8000/health/live || exit 1"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/live')"]
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 60s
     restart: unless-stopped
     deploy:
       resources:
@@ -186,11 +186,11 @@ services:
     volumes:
       - retrieval_model_cache:/app/.cache
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8002/health/live || exit 1"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health/live')"]
       interval: 15s
       timeout: 5s
       retries: 5
-      start_period: 60s
+      start_period: 120s
     restart: unless-stopped
     deploy:
       resources:
@@ -229,7 +229,7 @@ services:
     volumes:
       - ./docs/ontologies:/app/ontologies:ro
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8001/health/live || exit 1"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health/live')"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -271,7 +271,7 @@ services:
       - ./docs/ontologies:/app/ontologies:ro
       - ./prompts:/app/prompts:ro
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8004/health/live || exit 1"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8004/health/live')"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -292,14 +292,14 @@ services:
       CCI_GOVERNANCE_PORT: 8005
       CCI_AUDIT_ACTOR: governance-service
     ports:
-      - "8005:8005"
+      - "18005:8005"
     networks:
       - cci-backend
     depends_on:
       mongodb:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8005/health/live || exit 1"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8005/health/live')"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -332,7 +332,7 @@ services:
     volumes:
       - ./docs/ontologies:/app/ontologies:ro
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8003/health/live || exit 1"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/health/live')"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -365,7 +365,7 @@ services:
       governance:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:3000 || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5

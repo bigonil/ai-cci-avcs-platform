@@ -8,7 +8,8 @@ COPY pyproject.toml uv.lock ./
 COPY libs/cci-common ./libs/cci-common
 COPY services/retrieval ./services/retrieval
 
-RUN UV_HTTP_TIMEOUT=300 uv sync --package cci-retrieval --no-dev --no-editable
+RUN --mount=type=cache,target=/root/.cache/uv \
+    UV_HTTP_TIMEOUT=300 uv sync --package cci-retrieval --no-dev --no-editable
 
 # ---------------------------------------------------------------------------
 FROM python:3.12-slim AS runtime
