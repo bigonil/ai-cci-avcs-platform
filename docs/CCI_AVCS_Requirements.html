@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CCI / AVCS — Platform Requirements & Roadmap</title>
+<style>
+  :root {
+    --brand-dark: #0f172a;
+    --brand-mid:  #1e3a5f;
+    --brand-blue: #2563eb;
+    --brand-cyan: #0ea5e9;
+    --accent-green:  #16a34a;
+    --accent-yellow: #ca8a04;
+    --accent-red:    #dc2626;
+    --accent-purple: #7c3aed;
+    --text-main: #1e293b;
+    --text-muted: #64748b;
+    --bg-light: #f8fafc;
+    --border: #e2e8f0;
+    --qw-bg:   #f0fdf4;
+    --qw-head: #15803d;
+    --mt-bg:   #fffbeb;
+    --mt-head: #b45309;
+    --lt-bg:   #f5f3ff;
+    --lt-head: #6d28d9;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    color: var(--text-main);
+    background: #fff;
+    line-height: 1.6;
+  }
+
+  /* ── COVER ── */
+  .cover {
+    background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand-mid) 55%, #1d4ed8 100%);
+    color: #fff;
+    padding: 56px 64px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    right: -60px; top: -60px;
+    width: 360px; height: 360px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .cover .label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #93c5fd;
+    margin-bottom: 16px;
+  }
+  .cover h1 {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 10px;
+  }
+  .cover h1 span { color: #60a5fa; }
+  .cover .tagline {
+    font-size: 16px;
+    color: #bfdbfe;
+    font-style: italic;
+    margin-bottom: 32px;
+  }
+  .cover-meta {
+    display: flex;
+    gap: 40px;
+    font-size: 13px;
+    color: #94a3b8;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    padding-top: 20px;
+    flex-wrap: wrap;
+  }
+  .cover-meta strong { color: #e2e8f0; }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 40px; }
+  section { padding: 44px 0 32px; }
+  section + section { border-top: 1px solid var(--border); }
+
+  h2 {
+    font-size: 20px; font-weight: 700;
+    color: var(--brand-dark);
+    margin-bottom: 6px;
+  }
+  h2 .section-num {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--brand-blue);
+    display: block;
+    margin-bottom: 4px;
+  }
+  h3 { font-size: 15px; font-weight: 700; color: var(--brand-mid); margin: 20px 0 10px; }
+  p  { color: var(--text-muted); margin-bottom: 10px; line-height: 1.7; }
+
+  /* ── KPI CARDS ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+  .kpi-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 16px;
+    background: var(--bg-light);
+    text-align: center;
+  }
+  .kpi-card .val {
+    font-size: 28px; font-weight: 800;
+    color: var(--brand-blue); line-height: 1;
+    margin-bottom: 4px;
+  }
+  .kpi-card .lbl {
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--text-muted);
+    font-weight: 600;
+  }
+
+  /* ── DOMAIN CHIPS ── */
+  .domain-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+  .domain-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: #dbeafe; color: #1e40af;
+    border-radius: 6px; padding: 4px 10px;
+    font-size: 12px; font-weight: 600;
+  }
+  .domain-chip.alt { background: #ede9fe; color: #5b21b6; }
+
+  /* ── STATUS BADGES ── */
+  .badge {
+    display: inline-block;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+  }
+  .b-done    { background:#dcfce7; color:#15803d; }
+  .b-partial { background:#fef9c3; color:#92400e; }
+  .b-todo    { background:#fee2e2; color:#b91c1c; }
+  .b-planned { background:#ede9fe; color:#6d28d9; }
+
+  /* ── PRIORITY MATRIX ── */
+  .matrix-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 20px 0;
+  }
+  .matrix-cell {
+    border-radius: 10px;
+    padding: 20px 18px;
+  }
+  .matrix-cell.qw { background: var(--qw-bg); border-left: 4px solid var(--qw-head); }
+  .matrix-cell.mt { background: var(--mt-bg); border-left: 4px solid var(--mt-head); }
+  .matrix-cell.lt { background: var(--lt-bg); border-left: 4px solid var(--lt-head); }
+  .matrix-cell h4 {
+    font-size: 13px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 8px;
+  }
+  .matrix-cell.qw h4 { color: var(--qw-head); }
+  .matrix-cell.mt h4 { color: var(--mt-head); }
+  .matrix-cell.lt h4 { color: var(--lt-head); }
+  .matrix-cell .horizon { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; }
+  .matrix-cell ul { padding-left: 16px; }
+  .matrix-cell li { font-size: 12.5px; color: var(--text-main); margin-bottom: 4px; }
+
+  /* ── REQUIREMENTS TABLES ── */
+  .req-section { margin: 28px 0; }
+  .req-header {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 20px;
+    border-radius: 8px 8px 0 0;
+  }
+  .req-header.qw { background: var(--qw-head); }
+  .req-header.mt { background: var(--mt-head); }
+  .req-header.lt { background: var(--lt-head); }
+  .req-header .icon { font-size: 20px; }
+  .req-header h3 {
+    color: #fff; margin: 0;
+    font-size: 15px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .req-header .horizon-tag {
+    margin-left: auto;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    border-radius: 4px;
+    padding: 2px 10px;
+    font-size: 11px; font-weight: 700;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+  }
+  table thead th {
+    background: #f1f5f9;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  table tbody tr:hover { background: #f8fafc; }
+  table tbody td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table tbody tr:last-child td { border-bottom: none; }
+
+  .req-id {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .req-name { font-weight: 600; color: var(--brand-dark); }
+  .req-desc { color: var(--text-muted); font-size: 12.5px; line-height: 1.5; }
+  .layer-tag {
+    display: inline-block;
+    background: #e0f2fe;
+    color: #0369a1;
+    border-radius: 4px;
+    padding: 1px 7px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .prio {
+    display: flex; align-items: center; gap: 4px;
+    font-weight: 700; font-size: 12px;
+  }
+  .prio .dots { display: flex; gap: 2px; }
+  .prio .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--border);
+  }
+  .prio-1 .dot:nth-child(-n+1) { background: #ef4444; }
+  .prio-2 .dot:nth-child(-n+2) { background: #f97316; }
+  .prio-3 .dot:nth-child(-n+3) { background: #eab308; }
+  .prio-4 .dot:nth-child(-n+4) { background: #22c55e; }
+  .prio-5 .dot:nth-child(-n+5) { background: #3b82f6; }
+
+  /* ── ARCH PRINCIPLES ── */
+  .principles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 14px;
+    margin: 20px 0;
+  }
+  .principle-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    background: var(--bg-light);
+  }
+  .principle-card .rule-id {
+    font-size: 11px; font-weight: 800; color: var(--brand-blue);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .principle-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .principle-card p { font-size: 12px; color: var(--text-muted); margin: 0; }
+
+  /* ── FOOTER ── */
+  .doc-footer {
+    background: var(--bg-light);
+    border-top: 1px solid var(--border);
+    padding: 24px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .doc-footer strong { color: var(--text-main); }
+
+  @media (max-width: 768px) {
+    .cover { padding: 36px 24px 32px; }
+    .container { padding: 0 20px; }
+    .matrix-grid { grid-template-columns: 1fr; }
+    .cover h1 { font-size: 24px; }
+  }
+  @media print {
+    .cover { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    section { page-break-inside: avoid; }
+    .req-section { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════ COVER -->
+<div class="cover">
+  <div class="label">Documento di Requisiti di Piattaforma · v1.0 · Giugno 2026</div>
+  <h1>CCI / AVCS<br><span>Continuous Coherence Intelligence</span></h1>
+  <p class="tagline">"Non genera. Verifica."</p>
+  <div class="cover-meta">
+    <div><strong>Tipo:</strong> Agentic AI Platform — Verifica Continua di Coerenza</div>
+    <div><strong>Classificazione AI Act:</strong> Alto Rischio (Reg. UE 2024/1689, Allegato III §5b)</div>
+    <div><strong>Stakeholder:</strong> Hera Group · AOU Modena · SEMSOTEC · Ducati Corse · Dallara · Prada</div>
+    <div><strong>Autore:</strong> Team Architetturale CCI/AVCS</div>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ══════════════════════════════════════════════════════════ 1. EXECUTIVE SUMMARY -->
+<section>
+  <h2><span class="section-num">Sezione 1</span>Executive Summary</h2>
+
+  <p>
+    <strong>CCI/AVCS</strong> è una piattaforma agentic AI di nuova generazione per la <strong>verifica continua
+    di coerenza</strong> finanziaria, documentale e di compliance cross-dominio. Il sistema non è un
+    chatbot RAG: è un <em>Continuous Coherence Verification System</em> progettato per rilevare
+    automaticamente incoerenze tra documenti eterogenei — impegni cloud vs. budget approvati,
+    certificazioni scadute vs. attività in corso, dati clinici vs. approvazioni etiche — senza
+    generare affermazioni prive di evidenza.
+  </p>
+  <p>
+    La piattaforma è classificata come <strong>sistema AI ad alto rischio</strong> ai sensi del
+    Regolamento UE 2024/1689 (EU AI Act), in quanto produce output utilizzati in decisioni finanziarie,
+    compliance normativa e supervisione di sperimentazioni cliniche. Ogni componente è progettato
+    <em>compliance-by-design</em>: audit log immutabile con hash chain SHA-256, human-in-the-loop
+    obbligatorio sopra soglia, grounding forzato su ogni output LLM.
+  </p>
+
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="val">6</div><div class="lbl">Domini Verticali</div></div>
+    <div class="kpi-card"><div class="val">12</div><div class="lbl">Microservizi Attivi</div></div>
+    <div class="kpi-card"><div class="val">7</div><div class="lbl">Regole Non Negoziabili</div></div>
+    <div class="kpi-card"><div class="val">&lt;30s</div><div class="lbl">Tempo Verifica MVP</div></div>
+    <div class="kpi-card"><div class="val">&gt;80%</div><div class="lbl">Precisione Target</div></div>
+    <div class="kpi-card"><div class="val">&lt;1%</div><div class="lbl">Tasso Allucinazione</div></div>
+    <div class="kpi-card"><div class="val">&lt;0.03€</div><div class="lbl">Costo/Verifica MVP</div></div>
+    <div class="kpi-card"><div class="val">99%</div><div class="lbl">Uptime Target</div></div>
+  </div>
+
+  <h3>Domini Verticali Abilitati</h3>
+  <div class="domain-list">
+    <span class="domain-chip">🏭 Hera Group IT — Cloud &amp; ISO 27001</span>
+    <span class="domain-chip">🏥 AOU Modena — Sperimentazione Clinica</span>
+    <span class="domain-chip">⚙️ SEMSOTEC — Certificazioni Prodotto (CE)</span>
+    <span class="domain-chip alt">🏎️ Ducati Corse — Omologazioni FIM MotoGP</span>
+    <span class="domain-chip alt">🚗 Dallara — Crash Test FIA IndyCar</span>
+    <span class="domain-chip alt">👜 Prada Group — Digital Product Passport &amp; ESG</span>
+  </div>
+
+  <h3>Principi Architetturali Non Negoziabili</h3>
+  <div class="principles-grid">
+    <div class="principle-card">
+      <div class="rule-id">R1 — Bounded Context Isolation</div>
+      <h4>Nessun import diretto tra servizi</h4>
+      <p>Comunicazione esclusivamente via REST API o eventi CloudEvents 1.0. Divieto assoluto di <code>from services.X import</code> da un altro servizio.</p>
+    </div>
+    <div class="principle-card">
+      <div class="rule-id">R2 — Shared Database Ban</div>
+      <h4>Database separati per bounded context</h4>
+      <p>Qdrant: collection separate per dominio. Neo4j: namespace separati. MongoDB: database distinti per operational e governance.</p>
+    </div>
+    <div class="principle-card">
+      <div class="rule-id">R3 — Grounding Obbligatorio</div>
+      <h4>Ogni output LLM cita [chunk_id]</h4>
+      <p>Il citation enforcer blocca qualsiasi completamento destinato all'utente privo di almeno un riferimento a chunk recuperato. Non disabilitabile in produzione.</p>
+    </div>
+    <div class="principle-card">
+      <div class="rule-id">R4 — Zero LLM nel Verifier</div>
+      <h4>Coherence Engine 100% deterministico</h4>
+      <p>Il motore di regole usa esclusivamente query Cypher temporali e valutazioni aritmetiche. Nessuna chiamata LLM per decidere se un'incoerenza esiste.</p>
+    </div>
+    <div class="principle-card">
+      <div class="rule-id">R5 — Audit Log Immutabile</div>
+      <h4>MongoDB append-only + hash chain SHA-256</h4>
+      <p>Collection con ruolo DB <em>insert-only</em>. Ogni documento include <code>prev_hash</code> e <code>record_hash</code>. Verifica integrità automatizzata via script.</p>
+    </div>
+    <div class="principle-card">
+      <div class="rule-id">R6 — Human-in-the-Loop Hard Gate</div>
+      <h4>Approvazione umana obbligatoria oltre soglia</h4>
+      <p>Soglia configurabile via env var (<code>CCI_HITL_THRESHOLD_EUR</code>). Campo motivazione obbligatorio (min 20 char). Blocco hard senza bypass.</p>
+    </div>
+    <div class="principle-card">
+      <div class="rule-id">R7 — 12-Factor Mandatorio</div>
+      <h4>Configurazione via env, stateless, no segreti in repo</h4>
+      <p>Credenziali esclusivamente da Vault. Stato in Redis o backing store dedicato. Graceful shutdown. Dev/prod parity tramite docker-compose.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ 2. PRIORITY MATRIX -->
+<section>
+  <h2><span class="section-num">Sezione 2</span>Matrice di Priorità — Quick Win / Med Term / Long Term</h2>
+  <p>La seguente matrice sintetizza le aree di intervento per orizzonte temporale. I requisiti dettagliati
+  per ciascun orizzonte sono espansi nelle sezioni successive.</p>
+
+  <div class="matrix-grid">
+    <div class="matrix-cell qw">
+      <h4>⚡ Quick Win</h4>
+      <div class="horizon">Orizzonte 0–3 mesi · Deliverable immediati</div>
+      <ul>
+        <li>Stack infrastrutturale (12 container)</li>
+        <li>Coherence Engine deterministico</li>
+        <li>Dashboard frontend incoerenze</li>
+        <li>API REST su tutti i servizi</li>
+        <li>6 ontologie dominio + fixture demo</li>
+        <li>Audit log hash chain operativo</li>
+        <li>Health checks &amp; metriche Prometheus</li>
+        <li>HITL base API</li>
+        <li>Proxy same-origin Next.js</li>
+        <li>Scenari demo end-to-end</li>
+      </ul>
+    </div>
+    <div class="matrix-cell mt">
+      <h4>🔄 Medium Term</h4>
+      <div class="horizon">Orizzonte 3–9 mesi · Completamento MVP produttivo</div>
+      <ul>
+        <li>Pipeline ingestion documenti reali</li>
+        <li>Neo4j temporal graph popolato</li>
+        <li>Hybrid retrieval (dense + BM25 + RRF)</li>
+        <li>LangGraph 5-agent orchestration</li>
+        <li>Citation enforcement completo</li>
+        <li>PII pseudonymization GDPR</li>
+        <li>Frontend HITL approval flow</li>
+        <li>Frontend audit trail viewer</li>
+        <li>CI/CD pipeline (GitHub Actions)</li>
+        <li>Test coverage ≥ 80% tutti i servizi</li>
+      </ul>
+    </div>
+    <div class="matrix-cell lt">
+      <h4>🎯 Long Term</h4>
+      <div class="horizon">Orizzonte 9–18+ mesi · Produzione scalabile</div>
+      <ul>
+        <li>Kubernetes / Helm charts (Fase 3)</li>
+        <li>HashiCorp Vault in produzione</li>
+        <li>ISO 42001 certificazione AIMS</li>
+        <li>Multi-tenant &amp; RBAC enterprise</li>
+        <li>Kafka migration (da Redis Streams)</li>
+        <li>Report what-if generator (PDF/DOCX)</li>
+        <li>API gateway + rate limiting</li>
+        <li>OIDC/SSO enterprise (Keycloak/Entra)</li>
+        <li>Terraform IaC multi-cloud</li>
+        <li>SLA 99.9% + DR strategy</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ 3. QUICK WIN -->
+<section>
+  <h2><span class="section-num">Sezione 3</span>Requisiti Quick Win — Orizzonte 0–3 mesi</h2>
+  <p>Funzionalità già implementate o raggiungibili con effort minimo. Costituiscono il nucleo
+  dimostrabile della piattaforma (demo MVP) e abilitano le sessioni di validazione con gli stakeholder.</p>
+
+  <div class="req-section">
+    <div class="req-header qw">
+      <span class="icon">⚡</span>
+      <h3>Quick Win — Infrastruttura &amp; Core Platform</h3>
+      <span class="horizon-tag">0–3 mesi</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:80px">ID</th>
+          <th style="width:200px">Requisito</th>
+          <th>Descrizione</th>
+          <th style="width:110px">Layer</th>
+          <th style="width:90px">Stato</th>
+          <th style="width:80px">Priorità</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="req-id">QW-INF-01</span></td>
+          <td><span class="req-name">Stack docker-compose completo</span></td>
+          <td class="req-desc">12 container (MongoDB, Neo4j, Qdrant, Redis, MinIO, ingestion, knowledge, retrieval, coherence, agents, governance, frontend) avviabili con un unico <code>make up</code>. Tutti i health check superati.</td>
+          <td><span class="layer-tag">Infra</span></td>
+          <td><span class="badge b-done">✓ Done</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">QW-INF-02</span></td>
+          <td><span class="req-name">Health checks standardizzati</span></td>
+          <td class="req-desc">Endpoint <code>/health/live</code>, <code>/health/ready</code>, <code>/health/startup</code> implementati su tutti e 6 i servizi FastAPI. Conformi allo schema Kubernetes probe-ready.</td>
+          <td><span class="layer-tag">Infra</span></td>
+          <td><span class="badge b-done">✓ Done</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">QW-INF-03</span></td>
+          <td><span class="req-name">Metriche Prometheus</span></td>
+          <td class="req-desc">Endpoint <code>/metrics</code> con <code>prometheus_fastapi_instrumentator</code> su tutti i servizi. Metriche custom: <code>cci_coherence_violations_total</code>, <code>cci_verification_duration_seconds</code>, <code>cci_grounding_violations_total</code>.</td>
+          <td><span class="layer-tag">Observability</span></td>
+          <td><span class="badge b-done">✓ Done</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">QW-INF-04</span></td>
+          <td><span class="req-name">Structured logging JSON</span></td>
+          <td class="req-desc">Tutti i servizi usano <code>structlog</code> con output JSON strutturato contenente <code>trace_id</code>, <code>span_id</code>, <code>service</code>, <code>version</code>, <code>environment</code>. Nessun <code>print()</code> nel codice di produzione.</td>
+          <td><span class="layer-tag">Observability</span></td>
+          <td><span class="badge b-done">✓ Done</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">QW-INF-05</span></td>
+          <td><span class="req-name">OpenTelemetry tracing</span></td>
+          <td class="req-desc">Setup centralizzato in <code>libs/cci-common/observability.py</code>. Esportatore OTLP gRPC verso Tempo se <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> è configurato, altrimenti console. Profilo <code>--profile observability</code> opzionale in docker-compose.</td>
+          <td><span class="layer-tag">Observability</span></td>
+          <td><span class="badge b-done">✓ Done</span></td>
+          <td><div class="prio prio-3"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">QW-INF-06</span></td>
+          <td><span class="req-name">MongoDB replica set + init scripts</span></td>
+          <td class="req-desc">MongoDB 7.0 avviato come replica set mono-nodo (<code>rs0</code>). Script di init per: utenti applicativi (<code>cci_app</code>, <code>cci_audit_writer</code>), ruolo <code>audit_log_writer</code> insert-only, indici unici su <code>audit_log.seq</code> e <code>audit_log.event_id</code>.</td>
+          <td><span class="layer-tag">Data Store</span></td>
+          <td><span class="badge b-done">✓ Done</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">QW-COH-01</span></td>
+          <td><span class="req-name">Coherence Engine deterministico</span></td>
+          <td class="req-desc">Motore a regole <strong>zero-LLM</strong> (R4) in Python puro. Supporta pattern: <code>simple_overrun</code>, <code>cert_validity</code>, <code>aggregate_overrun</code>, <code>concentration</code>. Valutazione tramite query Cypher su Neo4j o estrazione entity da chunk testuali (fallback).</td>
+          <td><span class="layer-tag">Layer 3 — Coherence</span></td>
+          <td><span class="badge b-done">✓ Done</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">QW-COH-02</span></td>
+          <td><span class="req-name">Ontologie YAML — 6 domini</span></td>
+          <td class="req-desc">File YAML per: <code>hera_it</code> (R001–R004), <code>aou_clinical</code> (C001), <code>semsotec_product</code> (P001), <code>ducati_corse</code> (DC001–DC003), <code>dallara</code> (DA001), <code>prada</code> (PR001–PR005). Caricamento dinamico all'avvio senza redeploy.</td>
+          <td><span class="layer-tag">Layer 3 — Coherence</span></td>
+          <td><span class="badge b-done">✓ Done</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">QW-COH-03</span></td>
+          <td><span class="req-name">Fallback chunk-based con fixture</span></td>
+          <td class="req-desc">Quando Neo4j è vuoto (nessun entity indicizzato), il Coherence Engine cade back su valutazione chunk-based usando i file fixture montati da <code>FIXTURES_PATH</code>. Abilitato automaticamente in dev/demo via docker-compose volume mount.</td>
+          <td><span class="layer-tag">Layer 3 — Coherence</span></td>
+          <td><span class="badge b-done">✓ Done</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">QW-AUD-01</span></td>
+          <td><span class="req-name">Audit log append-only + hash chain</span></td>
+          <td class="req-desc">Collection MongoDB con validator schema strict, indici unici su <code>seq</code>, <code>event_id</code>, <code>record_hash</code>. Hash chain SHA-256: ogni documento porta <code>prev_hash</code> del precedente. Singleton <code>audit_log_tail</code> per atomicità. Script <code>verify_audit_chain.py</code> per integrità.</td>
+          <td><span class="layer-tag">Layer 5 — Governance</span></td>
+          <td><span class="badge b-done">✓ Done</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">QW-AUD-02</span></td>
+          <td><span class="req-name">HITL API — approvazione/rifiuto</span></td>
+          <td class="req-desc">Endpoint <code>POST /hitl/pending</code>, <code>POST /hitl/{id}/approve</code>, <code>POST /hitl/{id}/reject</code>. Campo <code>motivation</code> obbligatorio (min 20 char). Soglia configurabile via <code>CCI_HITL_THRESHOLD_EUR</code>.</td>
+          <td><span class="layer-tag">Layer 5 — Governance</span></td>
+          <td><span class="badge b-done">✓ Done</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">QW-FE-01</span></td>
+          <td><span class="req-name">Dashboard frontend — lista incoerenze</span></td>
+          <td class="req-desc">Next.js 16.2 App Router con TanStack Query. Pagina <code>/incoherences</code> con filtro severità, paginazione, stato di caricamento e skeleton. Componente <code>IncoherenceCard</code> con badge severità (CRITICAL/HIGH/MEDIUM/LOW) e lista evidence chunks.</td>
+          <td><span class="layer-tag">Frontend</span></td>
+          <td><span class="badge b-done">✓ Done</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">QW-FE-02</span></td>
+          <td><span class="req-name">Proxy API same-origin (Next.js routes)</span></td>
+          <td class="req-desc">Route handler catch-all <code>/api/coherence/[...path]</code> e <code>/api/governance/[...path]</code>. Il browser chiama URL same-origin (no CORS); il server Next.js fa forward verso i servizi FastAPI sulla rete Docker. Elimina dipendenza da variabili NEXT_PUBLIC_.</td>
+          <td><span class="layer-tag">Frontend</span></td>
+          <td><span class="badge b-done">✓ Done</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">QW-FE-03</span></td>
+          <td><span class="req-name">Dashboard home con KPI strip</span></td>
+          <td class="req-desc">Home page con contatori: totale incoerenze, pending HITL, dominio attivo. Sezione "Incoerenze recenti" con ultime 5 voci. Skeleton loading state. Componente <code>KpiStrip</code> con recharts per trend.</td>
+          <td><span class="layer-tag">Frontend</span></td>
+          <td><span class="badge b-done">✓ Done</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">QW-DEMO-01</span></td>
+          <td><span class="req-name">Scenari demo end-to-end (6 domini)</span></td>
+          <td class="req-desc">Script <code>run_demo_scenario.py</code> con scenari per tutti e 6 i domini. Ingestione fixture, verifica coerenza, output JSON strutturato. Dry-run senza docker (<code>--dry-run</code>). Incoerenze attese documentate per dominio (totale: 12 su 19 documenti).</td>
+          <td><span class="layer-tag">Demo</span></td>
+          <td><span class="badge b-done">✓ Done</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ 4. MEDIUM TERM -->
+<section>
+  <h2><span class="section-num">Sezione 4</span>Requisiti Medium Term — Orizzonte 3–9 mesi</h2>
+  <p>Completamento dell'MVP produttivo. Include il pipeline di ingestion documenti reali, la
+  popolamento del grafo Neo4j, l'orchestrazione LangGraph completa, il guardrail di grounding
+  e tutti gli aspetti GDPR. Al termine di questo orizzonte il sistema è dimostrabile con
+  documenti reali degli stakeholder.</p>
+
+  <div class="req-section">
+    <div class="req-header mt">
+      <span class="icon">🔄</span>
+      <h3>Medium Term — Ingestion, Knowledge &amp; Retrieval</h3>
+      <span class="horizon-tag">3–9 mesi</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:80px">ID</th>
+          <th style="width:200px">Requisito</th>
+          <th>Descrizione</th>
+          <th style="width:110px">Layer</th>
+          <th style="width:90px">Stato</th>
+          <th style="width:80px">Priorità</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="req-id">MT-ING-01</span></td>
+          <td><span class="req-name">Pipeline ingestion multi-formato</span></td>
+          <td class="req-desc">Upload di documenti PDF, DOCX, XLSX, HTML, .eml tramite <code>POST /documents</code>. Estrazione testo via Unstructured.io + OCR fallback (Tesseract/Donut). Chunking semantico per paragrafi logici (no sliding window). Embedding dense (all-MPNet-base-v2) + sparse (BM25) con indicizzazione Qdrant.</td>
+          <td><span class="layer-tag">Layer 1 — Ingestion</span></td>
+          <td><span class="badge b-partial">⚡ Partial</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-ING-02</span></td>
+          <td><span class="req-name">NER e estrazione entità strutturate</span></td>
+          <td class="req-desc">Pipeline spaCy + GLiNER per estrazione di: codici normativi (ISO, CE, FIM), importi monetari, date di validità, identificatori documento. Output event CloudEvents <code>ingestion.document.indexed.v1</code> con <code>entities[]</code>.</td>
+          <td><span class="layer-tag">Layer 1 — Ingestion</span></td>
+          <td><span class="badge b-partial">⚡ Partial</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-ING-03</span></td>
+          <td><span class="req-name">PII pseudonymization pre-LLM</span></td>
+          <td class="req-desc">Rilevamento PII tramite NER (nomi, CF, contatti, date nascita) e mascheramento con token deterministici prima di qualunque invio all'Anthropic API. Mapping reversibile in Redis con TTL. Rispetto GDPR Data Minimization art. 5(1)(c).</td>
+          <td><span class="layer-tag">Layer 1 — Ingestion</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-KNW-01</span></td>
+          <td><span class="req-name">Neo4j Temporal Knowledge Graph popolato</span></td>
+          <td class="req-desc">Knowledge service scrive entità estratte dall'ingestion nel grafo Neo4j. Schema property graph con archi temporali (<code>valid_from</code>, <code>valid_to</code>, <code>version</code>, <code>confidence</code>, <code>provenance_chunk_id</code>). Entità core: Document, Certification, Budget, Contract, KPI, Regulation.</td>
+          <td><span class="layer-tag">Layer 2 — Knowledge</span></td>
+          <td><span class="badge b-partial">⚡ Partial</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-KNW-02</span></td>
+          <td><span class="req-name">MongoDB Time-Series Collections</span></td>
+          <td class="req-desc">Collection time-series native (MongoDB 5+) per snapshot di KPI: budget consumato per mese, scadenze certificazioni in arrivo, throughput coda ingestion. <code>metaField</code>, <code>timeField</code>, <code>granularity: "hours"</code>. Retention via TTL index.</td>
+          <td><span class="layer-tag">Layer 2 — Knowledge</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-3"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-RET-01</span></td>
+          <td><span class="req-name">Hybrid retrieval RRF</span></td>
+          <td class="req-desc">Fusione dense (cosine similarity Qdrant) + sparse (BM25 con <code>rank_bm25</code>) tramite Reciprocal Rank Fusion. Score normalizzati, top-K (default 8) per contesto LLM. Filtro temporale: <code>valid_from ≤ as_of_date ≤ valid_to</code> sui chunk.</td>
+          <td><span class="layer-tag">Layer 4 — RAG</span></td>
+          <td><span class="badge b-partial">⚡ Partial</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-RET-02</span></td>
+          <td><span class="req-name">Cross-encoder reranker</span></td>
+          <td class="req-desc">Reranking con <code>bge-reranker-v2-m3</code> locale (via sentence-transformers) o Cohere Rerank API. Configurabile tramite <code>CCI_RERANKER_MODEL</code>. Cache dei risultati reranked su Redis con chiave basata su hash(query, top-K, domain).</td>
+          <td><span class="layer-tag">Layer 4 — RAG</span></td>
+          <td><span class="badge b-partial">⚡ Partial</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-RET-03</span></td>
+          <td><span class="req-name">Cache retrieval su Redis</span></td>
+          <td class="req-desc">Cache query-response con TTL configurabile. Chiave: <code>hash(query_text, domain, as_of_date, top_k, filters)</code>. Invalidazione su nuovo documento indicizzato per il domain. Riduce latenza media su query ripetute da &lt;30s a &lt;100ms.</td>
+          <td><span class="layer-tag">Layer 4 — RAG</span></td>
+          <td><span class="badge b-partial">⚡ Partial</span></td>
+          <td><div class="prio prio-3"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="req-section" style="margin-top:24px">
+    <div class="req-header mt">
+      <span class="icon">🔄</span>
+      <h3>Medium Term — Agentic Orchestration &amp; LLM</h3>
+      <span class="horizon-tag">3–9 mesi</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:80px">ID</th>
+          <th style="width:200px">Requisito</th>
+          <th>Descrizione</th>
+          <th style="width:110px">Layer</th>
+          <th style="width:90px">Stato</th>
+          <th style="width:80px">Priorità</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="req-id">MT-AGT-01</span></td>
+          <td><span class="req-name">LangGraph 5-agent state machine</span></td>
+          <td class="req-desc">Grafo LangGraph con nodi: Planner → Retriever → Verifier → Generator → Audit. Stato esplicito condiviso. Checkpointer <code>langgraph-checkpoint-mongodb</code> su collection <code>cci_governance.langgraph_checkpoints</code> per ripresa dopo crash.</td>
+          <td><span class="layer-tag">Layer 3 — Agents</span></td>
+          <td><span class="badge b-partial">⚡ Partial</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-AGT-02</span></td>
+          <td><span class="req-name">Planner agent (LLM + deterministico)</span></td>
+          <td class="req-desc">Parsing di trigger in linguaggio naturale → <code>VerificationPlan</code> strutturato (Pydantic v2). Usa LLM (Claude Sonnet 4.6) solo per parsing NL; step di verifica sono deterministici. Prompt versionati in <code>prompts/v1/planner.j2</code>.</td>
+          <td><span class="layer-tag">Layer 3 — Agents</span></td>
+          <td><span class="badge b-partial">⚡ Partial</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-AGT-03</span></td>
+          <td><span class="req-name">Generator agent con citation enforcement</span></td>
+          <td class="req-desc">Generazione di spiegazioni naturali e alert con grounding forzato. Post-processor <code>citation_parser.py</code> valida la presenza di <code>[chunk_id]</code> in ogni frase. Max 3 retry con prompt rafforzato prima di bloccare. Nessun output senza citazione in produzione.</td>
+          <td><span class="layer-tag">Layer 3 — Agents</span></td>
+          <td><span class="badge b-partial">⚡ Partial</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-AGT-04</span></td>
+          <td><span class="req-name">LLM client wrapper Anthropic (cci-llm)</span></td>
+          <td class="req-desc">Classe <code>LLMClient</code> in <code>libs/cci-llm</code> con metodi <code>complete()</code> e <code>complete_streamed()</code>. Provider unico Anthropic, modello <code>claude-sonnet-4-6</code>. Retry esponenziale con jitter (max 3 tentativi su 5xx/429). Audit log automatico ogni chiamata. PII check pre-invio.</td>
+          <td><span class="layer-tag">libs/cci-llm</span></td>
+          <td><span class="badge b-partial">⚡ Partial</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-AGT-05</span></td>
+          <td><span class="req-name">Prompt caching Anthropic</span></td>
+          <td class="req-desc">Abilitare il prompt caching di Anthropic per il contesto di sistema (ontologie, regole di dominio) che viene riusato attraverso le chiamate. Riduzione attesa del costo per verifica del 30–50% su scenari multi-step con stesso dominio.</td>
+          <td><span class="layer-tag">libs/cci-llm</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-AGT-06</span></td>
+          <td><span class="req-name">Circuit breaker su dipendenze esterne</span></td>
+          <td class="req-desc">Pattern circuit breaker (libreria <code>purgatory</code> o equivalente) su tutte le chiamate verso Anthropic API, Qdrant, Neo4j. Retry con backoff esponenziale + jitter. Max 3–5 tentativi. Nessun retry su errori 4xx non-retriable (400, 401, 403, 404).</td>
+          <td><span class="layer-tag">Resilienza SRE</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="req-section" style="margin-top:24px">
+    <div class="req-header mt">
+      <span class="icon">🔄</span>
+      <h3>Medium Term — Frontend, CI/CD &amp; Compliance</h3>
+      <span class="horizon-tag">3–9 mesi</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:80px">ID</th>
+          <th style="width:200px">Requisito</th>
+          <th>Descrizione</th>
+          <th style="width:110px">Layer</th>
+          <th style="width:90px">Stato</th>
+          <th style="width:80px">Priorità</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="req-id">MT-FE-01</span></td>
+          <td><span class="req-name">HITL approval UI</span></td>
+          <td class="req-desc">Pagina <code>/hitl</code> con coda azioni pendenti. Form approvazione/rifiuto con campo motivazione (min 20 char, validazione Zod). Componente <code>HitlApprovalForm</code>. Invalidazione cache TanStack Query post-decisione. Badge contatore nella navigazione.</td>
+          <td><span class="layer-tag">Frontend</span></td>
+          <td><span class="badge b-partial">⚡ Partial</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-FE-02</span></td>
+          <td><span class="req-name">Audit trail viewer</span></td>
+          <td class="req-desc">Pagina <code>/audit</code> con timeline degli eventi audit ordinata per <code>seq</code>. Paginazione server-side. Filtri per <code>event_type</code>, <code>actor</code>, range di date. Trigger verifica hash chain in tempo reale con badge integrità ✓/✗.</td>
+          <td><span class="layer-tag">Frontend</span></td>
+          <td><span class="badge b-partial">⚡ Partial</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-FE-03</span></td>
+          <td><span class="req-name">Client TypeScript generato da OpenAPI</span></td>
+          <td class="req-desc">Script <code>pnpm gen:api</code> che rigenerà il client tipizzato dai contratti OpenAPI 3.1 dei servizi FastAPI (<code>coherence</code>, <code>governance</code>, <code>retrieval</code>). Il client generato non si modifica a mano. Eseguito ad ogni breaking change del contratto.</td>
+          <td><span class="layer-tag">Frontend</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-3"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-GDPR-01</span></td>
+          <td><span class="req-name">GDPR Right-to-Erasure</span></td>
+          <td class="req-desc">API <code>DELETE /documents/{id}</code> che propaga la cancellazione a Qdrant (delete payload), Neo4j (detach delete node), MongoDB (set PII fields to null). Append di evento <code>gdpr.erasure.executed.v1</code> sull'audit log. Mai rimozione del record di audit (chain integrità).</td>
+          <td><span class="layer-tag">Layer 5 — Governance</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-TEST-01</span></td>
+          <td><span class="req-name">Test coverage ≥ 80% tutti i servizi</span></td>
+          <td class="req-desc">Suite pytest con unit test (no container) + integration test (testcontainers su MongoDB, Neo4j, Qdrant, Redis). Test e2e su 4 scenari Playwright (dashboard, incoerences, hitl, audit). Coverage misurata con <code>coverage.py</code> e reportata in CI.</td>
+          <td><span class="layer-tag">Quality</span></td>
+          <td><span class="badge b-partial">⚡ Partial</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-TEST-02</span></td>
+          <td><span class="req-name">CI/CD pipeline (GitHub Actions)</span></td>
+          <td class="req-desc">Workflow GitHub Actions: lint (Ruff), typecheck (mypy strict), unit test, build Docker images, security scan (Trivy), check architetturale R1–R7 via hook. Triggered su ogni PR verso main. Branch protection: merge bloccato se CI fallisce.</td>
+          <td><span class="layer-tag">DevOps</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-COMP-01</span></td>
+          <td><span class="req-name">AI Act compliance manifest completo</span></td>
+          <td class="req-desc">File <code>docs/compliance/ai-act-mapping.yaml</code> con evidence per tutti gli articoli 9–15. Risk assessment ISO 31000. Documentazione trasparenza output (art. 13): ogni risposta utente espone <code>model_version</code>, <code>prompt_version</code>, <code>confidence</code>, <code>sources[]</code>.</td>
+          <td><span class="layer-tag">Compliance</span></td>
+          <td><span class="badge b-partial">⚡ Partial</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">MT-COMP-02</span></td>
+          <td><span class="req-name">Rate limiting in ingresso</span></td>
+          <td class="req-desc">Implementazione <code>slowapi</code> su FastAPI per tutti gli endpoint pubblici. Limiti per IP e per API key. Risposta <code>429 Too Many Requests</code> con header <code>Retry-After</code>. Prevenzione abusi e controllo costo LLM per dominio.</td>
+          <td><span class="layer-tag">Resilienza SRE</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-3"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ 5. LONG TERM -->
+<section>
+  <h2><span class="section-num">Sezione 5</span>Requisiti Long Term — Orizzonte 9–18+ mesi</h2>
+  <p>Investimenti strategici per il passaggio dalla fase MVP alla produzione enterprise scalabile.
+  Include orchestrazione Kubernetes, certificazione ISO 42001, funzionalità avanzate di reporting
+  e supporto multi-tenant per onboarding di nuovi clienti in autonomia.</p>
+
+  <div class="req-section">
+    <div class="req-header lt">
+      <span class="icon">🎯</span>
+      <h3>Long Term — Produzione Enterprise &amp; Scalabilità</h3>
+      <span class="horizon-tag">9–18+ mesi</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:80px">ID</th>
+          <th style="width:200px">Requisito</th>
+          <th>Descrizione</th>
+          <th style="width:110px">Layer</th>
+          <th style="width:90px">Stato</th>
+          <th style="width:80px">Priorità</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="req-id">LT-K8S-01</span></td>
+          <td><span class="req-name">Kubernetes / Helm deployment</span></td>
+          <td class="req-desc">Helm chart per ciascun servizio con values per environment (dev/staging/prod). HorizontalPodAutoscaler su retrieval e agents. PodDisruptionBudget. Network policies per isolamento bounded context. Rollout strategie rolling per zero-downtime deploy.</td>
+          <td><span class="layer-tag">Infra — Fase 3</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">LT-K8S-02</span></td>
+          <td><span class="req-name">Service mesh (Istio / Linkerd)</span></td>
+          <td class="req-desc">mTLS tra tutti i servizi. Distributed tracing automatico. Traffic management (canary, A/B). Observability avanzata senza modifiche al codice applicativo. Prerequisito per SLA 99.9%.</td>
+          <td><span class="layer-tag">Infra — Fase 3</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-3"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">LT-SEC-01</span></td>
+          <td><span class="req-name">HashiCorp Vault in produzione</span></td>
+          <td class="req-desc">Gestione centralizzata di tutti i segreti: <code>ANTHROPIC_API_KEY</code>, credenziali MongoDB, Neo4j, Qdrant. Rotazione automatica credenziali database. Integration con Kubernetes via External Secrets Operator. Audit log accessi da Vault.</td>
+          <td><span class="layer-tag">Sicurezza</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-5"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">LT-SEC-02</span></td>
+          <td><span class="req-name">OIDC / SSO enterprise</span></td>
+          <td class="req-desc">Integrazione Keycloak (o Entra ID) per autenticazione utenti. RBAC con ruoli: Admin, CFO-Viewer, Auditor, HITL-Operator. Access token JWT con scopes per endpoint. Nessun sistema di auth custom; pattern Next.js Auth.js o OAuth2-proxy.</td>
+          <td><span class="layer-tag">Sicurezza</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">LT-ARCH-01</span></td>
+          <td><span class="req-name">Multi-tenant &amp; RBAC enterprise</span></td>
+          <td class="req-desc">Isolamento dati tra tenant (Qdrant collection separation, Neo4j namespace, MongoDB database per tenant). Onboarding self-service di nuovi clienti tramite API. Configurazione ontologie per tenant via UI admin. Billing per tenant basato su <code>cci_verification_cost_eur</code>.</td>
+          <td><span class="layer-tag">Architettura</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">LT-ARCH-02</span></td>
+          <td><span class="req-name">Kafka migration (da Redis Streams)</span></td>
+          <td class="req-desc">Migrazione del backbone eventi da Redis Streams a Apache Kafka (o Confluent). Schema Registry per CloudEvents. Consumer groups per parallel processing. Dead letter queue. Necessario per throughput &gt;1.000 documenti/giorno e replay events.</td>
+          <td><span class="layer-tag">Architettura — Fase 3</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-3"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">LT-FEAT-01</span></td>
+          <td><span class="req-name">Report what-if generator (PDF/DOCX)</span></td>
+          <td class="req-desc">Generator agent produce report strutturati: executive summary, timeline incoerenze, simulazione what-if ("se rinnovo ISO slitta di X giorni, esposizione regolatoria è Y"). Export PDF (WeasyPrint) e DOCX (python-docx). Template versionati. Output firmato digitalmente per uso legale.</td>
+          <td><span class="layer-tag">Layer 3 — Agents</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">LT-FEAT-02</span></td>
+          <td><span class="req-name">Re-verification automatica schedulata</span></td>
+          <td class="req-desc">APScheduler (o Celery beat) per esecuzione periodica del loop RAG-Coherence. Trigger: event-driven (nuovo documento) + time-based (ogni N ore per dominio). Configurazione soglia re-trigger per dominio. Notifiche push verso frontend su nuove incoerenze rilevate.</td>
+          <td><span class="layer-tag">Layer 3 — Agents</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">LT-FEAT-03</span></td>
+          <td><span class="req-name">Incoherence memory store (few-shot)</span></td>
+          <td class="req-desc">Collection Qdrant dedicata per pattern di incoerenza risolti. Il Retriever usa questi pattern come few-shot examples nelle query successive per migliorare la precisione. Feedback loop: utente conferma/rifiuta incoerenza → apprendimento incrementale (no fine-tuning).</td>
+          <td><span class="layer-tag">Layer 4 — RAG</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-3"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">LT-COMP-01</span></td>
+          <td><span class="req-name">ISO 42001 — AIMS certification</span></td>
+          <td class="req-desc">Completamento del sistema di gestione AI (AIMS) secondo ISO 42001: policy documentate, role assignment, KPI di monitoraggio, audit interni. Prerequisito: AI Act compliance completa (MT-COMP-01). Target: certificazione entro 18 mesi per clienti con requisiti settoriali (AOU, SEMSOTEC).</td>
+          <td><span class="layer-tag">Compliance</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">LT-COMP-02</span></td>
+          <td><span class="req-name">Export audit firmato per auditor esterno</span></td>
+          <td class="req-desc">Script <code>export_audit_signed.py</code> genera export range <code>[start_seq, end_seq]</code> con firma HMAC-SHA256 tramite chiave da Vault. Formato JSON con payload canonico. Auditor riceve file + chiave su canale separato. Compliance art. 12 EU AI Act.</td>
+          <td><span class="layer-tag">Compliance</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-4"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">LT-OPS-01</span></td>
+          <td><span class="req-name">Terraform IaC multi-cloud</span></td>
+          <td class="req-desc">Moduli Terraform per provisioning infrastruttura su Azure (AKS, Cosmos DB, Azure Cache for Redis), AWS (EKS, DocumentDB, ElastiCache) e GCP (GKE, Firestore). Separazione ambienti tramite workspace. Remote state su object storage. SLA differenziato per ambiente.</td>
+          <td><span class="layer-tag">Infra — Fase 3</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-3"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">LT-OPS-02</span></td>
+          <td><span class="req-name">Disaster Recovery &amp; SLA 99.9%</span></td>
+          <td class="req-desc">RPO &lt; 1h, RTO &lt; 4h. MongoDB replica set 3 nodi in zone diverse. Neo4j cluster. Backup automatici su MinIO/S3 con verifica ripristino settimanale. Runbook DR documentato e testato. Monitoring on-call con alerting Grafana → PagerDuty/OpsGenie.</td>
+          <td><span class="layer-tag">Resilienza SRE</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-3"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+        <tr>
+          <td><span class="req-id">LT-OPS-03</span></td>
+          <td><span class="req-name">Grafana dashboards operativi</span></td>
+          <td class="req-desc">Dashboard Grafana pre-configurate: (1) Platform Overview (servizi, latenza, errori), (2) Coherence KPIs (precision, recall, violations/domain), (3) LLM Cost Monitor (tokens/giorno per dominio, vs soglia), (4) Audit Chain Health. Alert automatici su SLO breach.</td>
+          <td><span class="layer-tag">Observability</span></td>
+          <td><span class="badge b-planned">◻ Planned</span></td>
+          <td><div class="prio prio-3"><div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════ 6. KPI TABLE -->
+<section>
+  <h2><span class="section-num">Sezione 6</span>KPI Misurabili &amp; Target per Fase</h2>
+  <p>Tutti i KPI sono esposti via endpoint Prometheus <code>/metrics</code> e monitorabili
+  in Grafana. Target differenziati per fase di maturità.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>KPI</th>
+        <th>Metrica Prometheus</th>
+        <th>Target MVP (Fase 1)</th>
+        <th>Target Prod (Fase 2)</th>
+        <th>Target Scale (Fase 3)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Precisione rilevamento incoerenze</strong></td>
+        <td><code>cci_coherence_precision</code></td>
+        <td>&gt; 80%</td>
+        <td>&gt; 90%</td>
+        <td>&gt; 95%</td>
+      </tr>
+      <tr>
+        <td><strong>Recall incoerenze</strong></td>
+        <td><code>cci_coherence_recall</code></td>
+        <td>&gt; 75%</td>
+        <td>&gt; 85%</td>
+        <td>&gt; 90%</td>
+      </tr>
+      <tr>
+        <td><strong>Tempo verifica end-to-end</strong></td>
+        <td><code>cci_verification_duration_seconds</code></td>
+        <td>&lt; 30 s</td>
+        <td>&lt; 15 s</td>
+        <td>&lt; 5 s</td>
+      </tr>
+      <tr>
+        <td><strong>Tasso allucinazione (output LLM senza citazione)</strong></td>
+        <td><code>cci_grounding_violations_total</code></td>
+        <td>&lt; 1%</td>
+        <td>&lt; 0.5%</td>
+        <td>&lt; 0.1%</td>
+      </tr>
+      <tr>
+        <td><strong>Costo per verifica completa</strong></td>
+        <td><code>cci_verification_cost_eur</code></td>
+        <td>&lt; 0.03 €</td>
+        <td>&lt; 0.02 €</td>
+        <td>&lt; 0.01 €</td>
+      </tr>
+      <tr>
+        <td><strong>Uptime piattaforma</strong></td>
+        <td>Standard up/down gauge</td>
+        <td>99%</td>
+        <td>99.5%</td>
+        <td>99.9%</td>
+      </tr>
+      <tr>
+        <td><strong>Tempo di startup container</strong></td>
+        <td><code>cci_service_startup_seconds</code></td>
+        <td>&lt; 10 s</td>
+        <td>&lt; 5 s</td>
+        <td>&lt; 3 s</td>
+      </tr>
+      <tr>
+        <td><strong>Throughput ingestion documenti</strong></td>
+        <td><code>cci_documents_ingested_total</code></td>
+        <td>10/ora</td>
+        <td>100/ora</td>
+        <td>1.000+/ora</td>
+      </tr>
+      <tr>
+        <td><strong>Copertura test</strong></td>
+        <td>— (coverage.py)</td>
+        <td>&gt; 60%</td>
+        <td>&gt; 80%</td>
+        <td>&gt; 90%</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+</div><!-- /container -->
+
+<!-- ══════════════════════════════════════════════════════════ FOOTER -->
+<div class="doc-footer">
+  <div>
+    <strong>CCI / AVCS — Platform Requirements v1.0</strong> · Giugno 2026
+  </div>
+  <div>
+    Sistema classificato <strong>Alto Rischio</strong> ai sensi di EU AI Act Reg. UE 2024/1689
+  </div>
+  <div>
+    Stack: Python 3.12 · FastAPI · LangGraph · Claude Sonnet 4.6 · Next.js 16.2 · Docker
+  </div>
+</div>
+
+</body>
+</html>
