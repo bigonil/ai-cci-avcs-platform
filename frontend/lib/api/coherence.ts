@@ -1,6 +1,8 @@
 import type { Incoherence, IncoherenceFilters, VerificationRequest, VerificationResponse } from "./types"
 
-const BASE_URL = process.env.COHERENCE_SERVICE_URL ?? "http://localhost:8003"
+// Requests go through the Next.js API proxy (/api/coherence/...) so the browser
+// always uses a same-origin URL regardless of where the coherence service runs.
+const BASE_URL = "/api/coherence"
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {

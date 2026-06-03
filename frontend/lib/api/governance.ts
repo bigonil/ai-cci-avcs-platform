@@ -5,7 +5,9 @@ import type {
   ChainVerifyResponse,
 } from "./types"
 
-const BASE_URL = process.env.GOVERNANCE_SERVICE_URL ?? "http://localhost:8005"
+// Requests go through the Next.js API proxy (/api/governance/...) so the browser
+// always uses a same-origin URL regardless of where the governance service runs.
+const BASE_URL = "/api/governance"
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -21,7 +23,10 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const GovernanceService = {
   listPendingHitl(): Promise<HitlAction[]> {
-    return apiFetch<HitlAction[]>("/hitl/pending")
+    // Governance returns { pending: HitlAction[], count: number }
+    return apiFetch<{ pending: HitlAction[]; count: number }>("/hitl/pending").then(
+      (r) => r.pending,
+    )
   },
 
   approveAction(id: string, body: HitlDecisionPayload): Promise<HitlAction> {
