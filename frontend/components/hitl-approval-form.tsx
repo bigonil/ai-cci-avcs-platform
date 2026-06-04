@@ -8,9 +8,9 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
-import { formatEur } from "@/lib/utils"
+import { formatEur, cn } from "@/lib/utils"
 import type { HitlAction } from "@/lib/api"
-import { CheckCircle2, XCircle } from "lucide-react"
+import { CheckCircle2, XCircle, Info } from "lucide-react"
 
 const schema = z.object({
   decided_by: z.string().min(1, "Campo obbligatorio"),
@@ -28,9 +28,11 @@ export function HitlApprovalForm({ action, onDecide, isLoading }: HitlApprovalFo
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<FormValues>({ resolver: zodResolver(schema) })
 
+  const motivationValue = watch("motivation") ?? ""
   const impact = typeof action.payload["impact_eur"] === "number"
     ? action.payload["impact_eur"] as number
     : null
@@ -38,8 +40,9 @@ export function HitlApprovalForm({ action, onDecide, isLoading }: HitlApprovalFo
   return (
     <div className="space-y-4">
       <Alert>
+        <Info className="size-4" />
         <AlertDescription>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium">Tipo azione:</span>
               <Badge variant="outline" className="font-mono text-xs">
@@ -49,7 +52,9 @@ export function HitlApprovalForm({ action, onDecide, isLoading }: HitlApprovalFo
             {impact != null && (
               <div className="text-sm">
                 Impatto finanziario:{" "}
-                <span className="font-semibold">{formatEur(impact)}</span>
+                <span className="font-semibold text-orange-600 dark:text-orange-400">
+                  {formatEur(impact)}
+                </span>
               </div>
             )}
           </div>
@@ -75,10 +80,26 @@ export function HitlApprovalForm({ action, onDecide, isLoading }: HitlApprovalFo
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="motivation">Motivazione</Label>
-          <Input
+          <div className="flex items-center justify-between">
+            <Label htmlFor="motivation">Motivazione</Label>
+            <span className={cn(
+              "text-xs",
+              motivationValue.length >= 20 ? "text-muted-foreground" : "text-orange-500"
+            )}>
+              {motivationValue.length} / 20 min
+            </span>
+          </div>
+          <textarea
             id="motivation"
-            placeholder="Motivazione dell'approvazione (min. 20 caratteri)"
+            rows={4}
+            placeholder="Descrivere la motivazione della decisione (min. 20 caratteri)"
+            className={cn(
+              "flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
+              "ring-offset-background placeholder:text-muted-foreground",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+              "disabled:cursor-not-allowed disabled:opacity-50 resize-none",
+              errors.motivation && "border-destructive"
+            )}
             {...register("motivation")}
             aria-invalid={Boolean(errors.motivation)}
           />
