@@ -5,32 +5,53 @@ import { useIncoherences } from "@/hooks/use-incoherences"
 import { IncoherenceCard } from "@/components/incoherence-card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertTriangle } from "lucide-react"
+import type { Severity } from "@/lib/api"
+
+const SEVERITY_ORDER: Record<Severity, number> = {
+  CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3,
+}
 
 export function RecentIncoherencesClient() {
   const router = useRouter()
-  const { data, isLoading, isError } = useIncoherences({ domain: "hera_it", limit: 5 })
+  const { data, isLoading, isError } = useIncoherences({ domain: "hera_it", limit: 10 })
 
   if (isLoading) {
     return (
       <div className="space-y-3">
-        <Skeleton className="h-28" />
-        <Skeleton className="h-28" />
+        <Skeleton className="h-28 rounded-xl" />
+        <Skeleton className="h-28 rounded-xl" />
+        <Skeleton className="h-28 rounded-xl" />
       </div>
     )
   }
+
   if (isError) {
     return (
       <Alert variant="destructive">
-        <AlertDescription>Impossibile caricare le incoerenze. Verifica che il coherence-service sia attivo.</AlertDescription>
+        <AlertTriangle className="size-4" />
+        <AlertDescription>
+          Impossibile caricare le incoerenze. Verifica che il coherence-service sia attivo.
+        </AlertDescription>
       </Alert>
     )
   }
+
   if (!data?.length) {
-    return <p className="text-sm text-muted-foreground">Nessuna incoerenza rilevata.</p>
+    return (
+      <div className="rounded-xl border border-dashed py-10 text-center">
+        <p className="text-sm text-muted-foreground">Nessuna incoerenza rilevata per Hera IT.</p>
+      </div>
+    )
   }
+
+  const sorted = [...data].sort(
+    (a, b) => (SEVERITY_ORDER[a.severity] ?? 4) - (SEVERITY_ORDER[b.severity] ?? 4)
+  )
+
   return (
     <div className="space-y-3">
-      {data.map((inc) => (
+      {sorted.map((inc) => (
         <IncoherenceCard
           key={inc.id}
           incoherence={inc}

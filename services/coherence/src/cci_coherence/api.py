@@ -76,6 +76,11 @@ class IncoherenceOut(BaseModel):
     evidence_chunks: list[str]
     domain: str
     detected_at: str
+    computed_values: dict[str, Any] = Field(default_factory=dict)
+    entity_a_type: str | None = None
+    entity_a_props: dict[str, Any] = Field(default_factory=dict)
+    entity_b_type: str | None = None
+    entity_b_props: dict[str, Any] | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -219,7 +224,9 @@ async def list_incoherences(
         computed = v.get("computed_values", {})
         impact = float(computed.get("delta", computed.get("overrun_eur", 0)) or 0)
 
-        uid = hashlib.sha256(f"{domain}:{rule_id}:{detected_at}:{idx}".encode()).hexdigest()[:16]
+        # Deterministic ID: domain + rule_id only (no timestamp) so the same
+        # rule always has the same id across API calls — required for detail-page routing.
+        uid = hashlib.sha256(f"{domain}:{rule_id}".encode()).hexdigest()[:16]
 
         incoherences.append(IncoherenceOut(
             id=uid,
@@ -230,6 +237,11 @@ async def list_incoherences(
             evidence_chunks=v.get("evidence_chunks", []),
             domain=domain,
             detected_at=detected_at,
+            computed_values=computed,
+            entity_a_type=v.get("entity_a_type"),
+            entity_a_props=v.get("entity_a_props") or {},
+            entity_b_type=v.get("entity_b_type"),
+            entity_b_props=v.get("entity_b_props"),
         ))
 
     return incoherences[offset : offset + limit]

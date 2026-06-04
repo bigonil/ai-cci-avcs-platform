@@ -9,6 +9,11 @@ export interface Incoherence {
   evidence_chunks: string[]
   domain: string
   detected_at: string
+  computed_values?: Record<string, unknown>
+  entity_a_type?: string | null
+  entity_a_props?: Record<string, unknown>
+  entity_b_type?: string | null
+  entity_b_props?: Record<string, unknown> | null
   explanation?: {
     text: string
     citations: string[]
