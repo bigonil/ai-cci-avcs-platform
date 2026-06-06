@@ -1,5 +1,5 @@
 .PHONY: help install lint format typecheck test test-integration test-live test-e2e \
-        coverage up up-obs down build logs \
+        coverage up up-obs up-dev down build logs \
         demo demo-all demo-hera demo-aou demo-semsotec demo-ducati demo-dallara demo-prada \
         demo-dry-run verify-audit pre-commit clean mem-check
 
@@ -63,6 +63,9 @@ up: ## Avvia stack core (≤ 2.65 GB RAM, senza observability)
 	@echo "Waiting for services..."
 	@sleep 5
 	$(COMPOSE) ps
+
+up-dev: ## Avvia stack con frontend in hot-reload (Next.js dev + Turbopack, HMR)
+	$(COMPOSE) -f docker-compose.yml -f docker-compose.dev.yml up -d
 
 up-obs: ## Avvia stack core + observability (≤ 2.95 GB RAM — Prometheus, Grafana, Tempo)
 	$(COMPOSE) --profile observability up -d

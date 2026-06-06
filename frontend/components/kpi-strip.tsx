@@ -1,6 +1,6 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { AlertTriangle, ClipboardCheck, ShieldCheck } from "lucide-react"
+import { AlertTriangle, ClipboardCheck, ShieldCheck, ShieldAlert } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface KpiStripProps {
@@ -20,108 +20,149 @@ export function KpiStrip({
   chainValid,
   loading = false,
 }: KpiStripProps) {
-  const hasUrgent = (criticalCount ?? 0) > 0 || (highCount ?? 0) > 0
+  const urgentCount = criticalCount + highCount
+  const hasUrgent = urgentCount > 0
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
       {/* Total incoherences */}
-      <KpiCard
-        label="Incoerenze rilevate"
-        icon={<AlertTriangle className={cn("size-4", hasUrgent ? "text-orange-500" : "text-muted-foreground")} />}
-        loading={loading}
-      >
-        <div className="flex items-end gap-3">
-          <span className={cn("text-3xl font-bold", hasUrgent && "text-orange-600 dark:text-orange-400")}>
-            {totalIncoherences ?? "—"}
-          </span>
-          {!loading && totalIncoherences != null && totalIncoherences > 0 && (
-            <div className="flex items-center gap-1.5 pb-0.5 text-xs">
-              {criticalCount > 0 && (
-                <span className="inline-flex items-center gap-0.5 text-red-600 dark:text-red-400 font-medium">
-                  <span className="inline-flex h-2 w-2 rounded-full bg-red-500" />
-                  {criticalCount} critica
+      <Card className={cn(
+        "overflow-hidden border transition-colors",
+        hasUrgent && "border-orange-500/30 dark:border-orange-500/20"
+      )}>
+        <div className={cn("h-1 w-full", hasUrgent ? "bg-orange-500" : "bg-muted")} />
+        <CardContent className="pt-4 pb-5 px-5">
+          {loading ? (
+            <LoadingSkeleton />
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                  Incoerenze
+                </p>
+                <div className={cn(
+                  "flex h-7 w-7 items-center justify-center rounded-full",
+                  hasUrgent ? "bg-orange-100 dark:bg-orange-500/15" : "bg-muted"
+                )}>
+                  <AlertTriangle className={cn("size-3.5", hasUrgent ? "text-orange-500" : "text-muted-foreground")} />
+                </div>
+              </div>
+              <div className="flex items-end gap-3">
+                <span className={cn(
+                  "text-3xl font-bold leading-none tabular-nums",
+                  hasUrgent && "text-orange-600 dark:text-orange-400"
+                )}>
+                  {totalIncoherences ?? "—"}
                 </span>
+                {!loading && urgentCount > 0 && (
+                  <span className="mb-0.5 text-xs font-medium text-orange-600 dark:text-orange-400">
+                    {criticalCount > 0 && `${criticalCount} critica`}
+                    {criticalCount > 0 && highCount > 0 && " · "}
+                    {highCount > 0 && `${highCount} alta`}
+                  </span>
+                )}
+              </div>
+              {!hasUrgent && totalIncoherences != null && (
+                <p className="mt-1 text-xs text-muted-foreground">Nessuna urgente</p>
               )}
-              {highCount > 0 && (
-                <span className="inline-flex items-center gap-0.5 text-orange-600 dark:text-orange-400 font-medium">
-                  <span className="inline-flex h-2 w-2 rounded-full bg-orange-500" />
-                  {highCount} alta
-                </span>
-              )}
-            </div>
+            </>
           )}
-        </div>
-      </KpiCard>
+        </CardContent>
+      </Card>
 
       {/* HITL pending */}
-      <KpiCard
-        label="Azioni HITL in attesa"
-        icon={<ClipboardCheck className={cn("size-4", (pendingHitl ?? 0) > 0 ? "text-yellow-500" : "text-muted-foreground")} />}
-        loading={loading}
-      >
-        <span className={cn(
-          "text-3xl font-bold",
-          (pendingHitl ?? 0) > 0 ? "text-yellow-600 dark:text-yellow-400" : ""
-        )}>
-          {pendingHitl ?? "—"}
-        </span>
-        {!loading && (pendingHitl ?? 0) === 0 && (
-          <p className="text-xs text-muted-foreground mt-0.5">Nessuna in coda</p>
-        )}
-      </KpiCard>
+      <Card className={cn(
+        "overflow-hidden border transition-colors",
+        (pendingHitl ?? 0) > 0 && "border-yellow-500/30 dark:border-yellow-500/20"
+      )}>
+        <div className={cn("h-1 w-full", (pendingHitl ?? 0) > 0 ? "bg-yellow-500" : "bg-muted")} />
+        <CardContent className="pt-4 pb-5 px-5">
+          {loading ? (
+            <LoadingSkeleton />
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                  HITL in attesa
+                </p>
+                <div className={cn(
+                  "flex h-7 w-7 items-center justify-center rounded-full",
+                  (pendingHitl ?? 0) > 0 ? "bg-yellow-100 dark:bg-yellow-500/15" : "bg-muted"
+                )}>
+                  <ClipboardCheck className={cn("size-3.5", (pendingHitl ?? 0) > 0 ? "text-yellow-500" : "text-muted-foreground")} />
+                </div>
+              </div>
+              <span className={cn(
+                "text-3xl font-bold leading-none tabular-nums",
+                (pendingHitl ?? 0) > 0 ? "text-yellow-600 dark:text-yellow-400" : ""
+              )}>
+                {pendingHitl ?? "—"}
+              </span>
+              {(pendingHitl ?? 0) === 0 && pendingHitl != null && (
+                <p className="mt-1 text-xs text-muted-foreground">Coda vuota</p>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Audit chain */}
-      <KpiCard
-        label="Integrità audit chain"
-        icon={<ShieldCheck className={cn("size-4", chainValid === false ? "text-destructive" : "text-muted-foreground")} />}
-        loading={loading}
-      >
-        {chainValid == null ? (
-          <div>
-            <span className="text-3xl font-bold text-muted-foreground">—</span>
-            <p className="text-xs text-muted-foreground mt-0.5">Non verificata</p>
-          </div>
-        ) : (
-          <span className={cn("text-2xl font-bold", chainValid ? "text-green-600 dark:text-green-400" : "text-destructive")}>
-            {chainValid ? "✓ OK" : "✗ ERRORE"}
-          </span>
-        )}
-      </KpiCard>
+      <Card className={cn(
+        "overflow-hidden border transition-colors",
+        chainValid === false && "border-destructive/40"
+      )}>
+        <div className={cn(
+          "h-1 w-full",
+          chainValid == null ? "bg-muted" : chainValid ? "bg-green-500" : "bg-destructive"
+        )} />
+        <CardContent className="pt-4 pb-5 px-5">
+          {loading ? (
+            <LoadingSkeleton />
+          ) : (
+            <>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                  Audit chain
+                </p>
+                <div className={cn(
+                  "flex h-7 w-7 items-center justify-center rounded-full",
+                  chainValid === false ? "bg-red-100 dark:bg-destructive/15"
+                  : chainValid ? "bg-green-100 dark:bg-green-500/15"
+                  : "bg-muted"
+                )}>
+                  {chainValid === false
+                    ? <ShieldAlert className="size-3.5 text-destructive" />
+                    : <ShieldCheck className={cn("size-3.5", chainValid ? "text-green-600 dark:text-green-400" : "text-muted-foreground")} />
+                  }
+                </div>
+              </div>
+              {chainValid == null ? (
+                <>
+                  <span className="text-3xl font-bold leading-none text-muted-foreground">—</span>
+                  <p className="mt-1 text-xs text-muted-foreground">Non verificata</p>
+                </>
+              ) : (
+                <span className={cn(
+                  "text-2xl font-bold leading-none",
+                  chainValid ? "text-green-600 dark:text-green-400" : "text-destructive"
+                )}>
+                  {chainValid ? "✓ Integra" : "✗ Errore"}
+                </span>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }
 
-function KpiCard({
-  label,
-  icon,
-  loading,
-  children,
-}: {
-  label: string
-  icon: React.ReactNode
-  loading: boolean
-  children: React.ReactNode
-}) {
+function LoadingSkeleton() {
   return (
-    <Card>
-      <CardHeader className="border-b pb-2 pt-3">
-        <div className="flex items-center gap-2">
-          {icon}
-          <CardTitle className="text-xs uppercase tracking-wide text-muted-foreground font-medium">
-            {label}
-          </CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-3 pb-4">
-        {loading ? (
-          <div className="space-y-1">
-            <Skeleton className="h-8 w-16" />
-            <Skeleton className="h-3 w-24" />
-          </div>
-        ) : (
-          children
-        )}
-      </CardContent>
-    </Card>
+    <div className="space-y-2 pt-1">
+      <Skeleton className="h-3 w-20" />
+      <Skeleton className="h-8 w-12" />
+      <Skeleton className="h-3 w-16" />
+    </div>
   )
 }

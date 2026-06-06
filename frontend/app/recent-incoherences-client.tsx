@@ -18,10 +18,13 @@ export function RecentIncoherencesClient() {
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
-        <Skeleton className="h-28 rounded-xl" />
-        <Skeleton className="h-28 rounded-xl" />
-        <Skeleton className="h-28 rounded-xl" />
+      <div className="space-y-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="rounded-lg border overflow-hidden">
+            <div className="h-1 bg-muted" />
+            <Skeleton className="h-20 rounded-none" />
+          </div>
+        ))}
       </div>
     )
   }
@@ -50,7 +53,7 @@ export function RecentIncoherencesClient() {
   )
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {sorted.map((inc) => (
         <IncoherenceCard
           key={inc.id}
