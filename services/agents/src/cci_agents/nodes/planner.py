@@ -52,6 +52,28 @@ async def planner_node(
 
     log.info("planner_start", correlation_id=state.get("correlation_id"), domain=domain)
 
+    # If caller pre-selected rule IDs (e.g. per-rule explanation), bypass LLM planning
+    rule_ids_filter: list[str] | None = state.get("rule_ids_filter")
+    if rule_ids_filter:
+        rule_map = {r["id"]: r for r in available_rules}
+        selected_rules = [
+            {"rule_id": rid, "when": rule_map[rid]["when"], "severity": rule_map[rid]["severity"]}
+            for rid in rule_ids_filter
+            if rid in rule_map
+        ]
+        if selected_rules:
+            log.info(
+                "planner_rule_ids_filter_applied",
+                correlation_id=state.get("correlation_id"),
+                rule_ids=rule_ids_filter,
+            )
+            return {
+                "query": trigger,
+                "rules": selected_rules,
+                "plan_context": f"Focused on rule(s): {', '.join(rule_ids_filter)}",
+                "errors": errors,
+            }
+
     # Render prompt from Jinja2 template
     try:
         system_prompt = _render_prompt(

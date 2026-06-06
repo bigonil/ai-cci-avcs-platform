@@ -18,6 +18,7 @@ from contextlib import asynccontextmanager
 from datetime import date, datetime, timezone
 from typing import Any
 
+import httpx
 import structlog
 import yaml
 from fastapi import FastAPI, HTTPException, Query, status
@@ -27,6 +28,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel, Field
 
 from cci_coherence.config import CoherenceSettings, get_settings
+from cci_coherence.db import IncoherenceDB
 from cci_coherence.rule_engine import CoherenceEngine
 
 log = structlog.get_logger(__name__)
@@ -65,6 +67,14 @@ class VerifyResponse(BaseModel):
     violations: list[dict[str, Any]]
 
 
+class IncoherenceExplanation(BaseModel):
+    """Grounded LLM explanation attached to an incoherence (R3 compliant)."""
+
+    text: str
+    citations: list[str]
+    grounding_verified: bool = True
+
+
 class IncoherenceOut(BaseModel):
     """REST projection of a RuleViolation — consumed by the Next.js frontend."""
 
@@ -81,6 +91,12 @@ class IncoherenceOut(BaseModel):
     entity_a_props: dict[str, Any] = Field(default_factory=dict)
     entity_b_type: str | None = None
     entity_b_props: dict[str, Any] | None = None
+    explanation: IncoherenceExplanation | None = None
+
+
+class ExplainRequest(BaseModel):
+    domain: str = Field(..., description="Ontology domain, e.g. 'hera_it'")
+    rule_id: str = Field(..., description="Rule ID to generate explanation for")
 
 
 # ---------------------------------------------------------------------------
@@ -90,11 +106,12 @@ class IncoherenceOut(BaseModel):
 _engine: CoherenceEngine | None = None
 _settings: CoherenceSettings | None = None
 _start_time: float = 0.0
+_incoherence_db: IncoherenceDB | None = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # type: ignore[type-arg]
-    global _engine, _settings, _start_time
+    global _engine, _settings, _start_time, _incoherence_db
     _start_time = time.time()
     _settings = get_settings()
 
@@ -111,6 +128,16 @@ async def lifespan(app: FastAPI):  # type: ignore[type-arg]
         except Exception as exc:
             log.warning("neo4j_unavailable", error=str(exc))
             neo4j_driver = None
+
+    if _settings.mongodb_enabled:
+        try:
+            from motor.motor_asyncio import AsyncIOMotorClient
+            motor_client: Any = AsyncIOMotorClient(_settings.mongodb_uri)
+            mongo_db = motor_client[_settings.mongodb_database]
+            _incoherence_db = IncoherenceDB(mongo_db)
+            log.info("coherence_mongodb_connected", database=_settings.mongodb_database)
+        except Exception as exc:
+            log.warning("coherence_mongodb_unavailable", error=str(exc))
 
     _engine = CoherenceEngine(settings=_settings, neo4j_driver=neo4j_driver)
     log.info("coherence_engine_ready", domain_support=["hera_it"])
@@ -149,24 +176,11 @@ def _get_engine() -> CoherenceEngine:
     return _engine
 
 
-# ---------------------------------------------------------------------------
-# Incoherences convenience endpoint (wraps /verify with auto-loaded rules)
-# ---------------------------------------------------------------------------
-
-
-@app.get("/incoherences", response_model=list[IncoherenceOut])
-async def list_incoherences(
-    domain: str = Query(..., description="Ontology domain, e.g. 'hera_it'"),
-    severity: str | None = Query(None, description="Filter by severity level"),
-    limit: int = Query(50, ge=1, le=200),
-    offset: int = Query(0, ge=0),
-    as_of_date: str | None = Query(None, description="ISO date for temporal evaluation"),
+async def _compute_incoherences(
+    domain: str,
+    as_of_date: str | None = None,
 ) -> list[IncoherenceOut]:
-    """Run domain verification against the knowledge graph and return incoherences.
-
-    Loads rules from the ontology YAML, evaluates against Neo4j (graph-first),
-    and projects violations to the Incoherence REST format consumed by the frontend.
-    """
+    """Run the rule engine for a domain and return IncoherenceOut list (no explanation)."""
     if _settings is None:
         raise HTTPException(status_code=503, detail="Settings not loaded")
 
@@ -177,13 +191,11 @@ async def list_incoherences(
     with ontology_path.open() as fh:
         data = yaml.safe_load(fh)
     rules = data.get("rules", [])
-    # YAML ontology uses key "id"; rule_engine expects "rule_id"
     rules_for_engine = [
         {**r, "rule_id": r["id"]} if "rule_id" not in r else r
         for r in rules
     ]
 
-    # Load fixture chunks for chunk-based fallback when graph has no entities
     chunks: list[dict[str, Any]] = []
     if _settings.fixtures_path:
         fixtures_dir = _settings.fixtures_path / domain
@@ -209,23 +221,16 @@ async def list_incoherences(
     incoherences: list[IncoherenceOut] = []
     seen_rule_ids: set[str] = set()
 
-    for idx, v in enumerate(result.get("violations", [])):
+    for v in result.get("violations", []):
         rule_id: str = v.get("rule_violated", v.get("rule_id", "UNKNOWN"))
         sev: str = v.get("severity", "MEDIUM")
 
-        # Deduplicate: keep only the first violation per rule_id
         if rule_id in seen_rule_ids:
             continue
         seen_rule_ids.add(rule_id)
 
-        if severity and sev != severity:
-            continue
-
         computed = v.get("computed_values", {})
         impact = float(computed.get("delta", computed.get("overrun_eur", 0)) or 0)
-
-        # Deterministic ID: domain + rule_id only (no timestamp) so the same
-        # rule always has the same id across API calls — required for detail-page routing.
         uid = hashlib.sha256(f"{domain}:{rule_id}".encode()).hexdigest()[:16]
 
         incoherences.append(IncoherenceOut(
@@ -244,7 +249,154 @@ async def list_incoherences(
             entity_b_props=v.get("entity_b_props"),
         ))
 
-    return incoherences[offset : offset + limit]
+    return incoherences
+
+
+# ---------------------------------------------------------------------------
+# Incoherences convenience endpoint (wraps /verify with auto-loaded rules)
+# ---------------------------------------------------------------------------
+
+
+@app.get("/incoherences", response_model=list[IncoherenceOut])
+async def list_incoherences(
+    domain: str = Query(..., description="Ontology domain, e.g. 'hera_it'"),
+    severity: str | None = Query(None, description="Filter by severity level"),
+    limit: int = Query(50, ge=1, le=200),
+    offset: int = Query(0, ge=0),
+    as_of_date: str | None = Query(None, description="ISO date for temporal evaluation"),
+) -> list[IncoherenceOut]:
+    """Run domain verification and return incoherences (no cached explanation)."""
+    all_incoherences = await _compute_incoherences(domain, as_of_date)
+    filtered = [i for i in all_incoherences if not severity or i.severity == severity]
+    return filtered[offset : offset + limit]
+
+
+@app.get("/incoherences/{incoherence_id}", response_model=IncoherenceOut)
+async def get_incoherence(
+    incoherence_id: str,
+    domain: str = Query(..., description="Ontology domain, e.g. 'hera_it'"),
+    as_of_date: str | None = Query(None),
+) -> IncoherenceOut:
+    """Return a single incoherence with cached explanation merged in (if available)."""
+    incoherences = await _compute_incoherences(domain, as_of_date)
+    found = next((i for i in incoherences if i.id == incoherence_id), None)
+    if found is None:
+        raise HTTPException(status_code=404, detail=f"Incoherence '{incoherence_id}' not found in domain '{domain}'")
+
+    if _incoherence_db is not None:
+        cached = await _incoherence_db.get_explanation(incoherence_id)
+        if cached:
+            found = found.model_copy(
+                update={"explanation": IncoherenceExplanation(**cached)}
+            )
+
+    return found
+
+
+@app.post("/incoherences/{incoherence_id}/explain", response_model=IncoherenceExplanation)
+async def explain_incoherence(
+    incoherence_id: str,
+    req: ExplainRequest,
+) -> IncoherenceExplanation:
+    """Generate or return cached LLM explanation for a single incoherence (R3 enforced)."""
+    if _settings is None:
+        raise HTTPException(status_code=503, detail="Settings not loaded")
+
+    # Cache hit — return immediately without calling agents
+    if _incoherence_db is not None:
+        cached = await _incoherence_db.get_explanation(incoherence_id)
+        if cached:
+            log.info("explanation_cache_hit", incoherence_id=incoherence_id)
+            return IncoherenceExplanation(**cached)
+
+    # Cache miss — find the violation + load fixture chunks, then call agents /generate
+    # (R1: REST only — no direct import of agents or cci-llm from coherence service)
+    incoherences = await _compute_incoherences(req.domain)
+    violation = next(
+        (
+            {
+                "rule_violated": i.rule_id,
+                "description": i.description,
+                "severity": i.severity,
+                "evidence_chunks": i.evidence_chunks,
+                "computed_values": i.computed_values,
+                "entity_a_type": i.entity_a_type,
+                "entity_a_props": i.entity_a_props,
+                "entity_b_type": i.entity_b_type,
+                "entity_b_props": i.entity_b_props,
+            }
+            for i in incoherences
+            if i.id == incoherence_id
+        ),
+        None,
+    )
+    if violation is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Incoherence '{incoherence_id}' not found in domain '{req.domain}'",
+        )
+
+    # Load fixture chunks (same source used by _compute_incoherences)
+    chunks: list[dict[str, Any]] = []
+    if _settings.fixtures_path:
+        fixtures_dir = _settings.fixtures_path / req.domain
+        if fixtures_dir.is_dir():
+            for txt_file in sorted(fixtures_dir.glob("*.txt")):
+                try:
+                    chunks.append({
+                        "chunk_id": f"fixture_{txt_file.stem}",
+                        "text": txt_file.read_text(encoding="utf-8"),
+                    })
+                except Exception:
+                    pass
+
+    agents_url = _settings.agents_service_url
+    payload = {
+        "domain": req.domain,
+        "violation": violation,
+        "chunks": chunks,
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            resp = await client.post(f"{agents_url}/generate", json=payload)
+            resp.raise_for_status()
+            agents_data = resp.json()
+    except httpx.HTTPStatusError as exc:
+        log.error("agents_service_error", status=exc.response.status_code, error=str(exc))
+        raise HTTPException(status_code=502, detail=f"Agents service error: {exc.response.status_code}") from exc
+    except Exception as exc:
+        log.error("agents_service_unavailable", error=str(exc))
+        raise HTTPException(status_code=503, detail="Agents service unavailable") from exc
+
+    report_text: str = agents_data.get("text", "")
+    citations: list[str] = agents_data.get("citations", [])
+    grounding_verified: bool = agents_data.get("grounding_verified", False)
+
+    # R3: block non-grounded output
+    if not grounding_verified:
+        log.error("r3_violation_explain_endpoint", incoherence_id=incoherence_id)
+        raise HTTPException(
+            status_code=422,
+            detail="Explanation failed R3 grounding check — no [source: chunk_id] citations found",
+        )
+
+    # Persist to cache
+    if _incoherence_db is not None:
+        await _incoherence_db.upsert_explanation(
+            incoherence_id,
+            domain=req.domain,
+            rule_id=req.rule_id,
+            explanation=report_text,
+            citations=citations,
+            grounding_verified=grounding_verified,
+        )
+
+    return IncoherenceExplanation(
+        text=report_text,
+        citations=citations,
+        grounding_verified=grounding_verified,
+    )
 
 
 # ---------------------------------------------------------------------------

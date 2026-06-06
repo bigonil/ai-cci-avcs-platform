@@ -323,12 +323,17 @@ services:
       ONTOLOGIES_PATH: /app/ontologies
       FIXTURES_PATH: /app/fixtures
       CCI_COHERENCE_PORT: 8003
+      MONGODB_URI: mongodb://cci_app:${MONGODB_APP_PASSWORD:-apppassword}@mongodb:27017/cci_operational?authSource=cci_operational
+      MONGODB_DATABASE: cci_operational
+      AGENTS_SERVICE_URL: http://agents:8004
     ports:
       - "8003:8003"
     networks:
       - cci-backend
     depends_on:
       neo4j:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
     volumes:
       - ./docs/ontologies:/app/ontologies:ro

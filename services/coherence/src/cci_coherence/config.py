@@ -35,6 +35,17 @@ class CoherenceSettings(BaseSettings):
     # Optional fixture files for chunk-based fallback in dev/demo (FIXTURES_PATH env)
     fixtures_path: pathlib.Path | None = Field(default=None, alias="FIXTURES_PATH")
 
+    # MongoDB (optional — for explanation cache)
+    mongodb_uri: str = Field(
+        default="mongodb://cci_app:apppassword@mongodb:27017/cci_operational?authSource=cci_operational",
+        alias="MONGODB_URI",
+    )
+    mongodb_database: str = Field(default="cci_operational", alias="MONGODB_DATABASE")
+    mongodb_enabled: bool = Field(default=True, alias="CCI_COHERENCE_MONGODB_ENABLED")
+
+    # Agents service (for on-demand explanation generation)
+    agents_service_url: str = Field(default="http://agents:8004", alias="AGENTS_SERVICE_URL")
+
     # Evaluation
     confidence_threshold: float = 0.5
 

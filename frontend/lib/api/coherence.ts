@@ -1,5 +1,11 @@
 import type { Incoherence, IncoherenceFilters, VerificationRequest, VerificationResponse } from "./types"
 
+export interface ExplanationResponse {
+  text: string
+  citations: string[]
+  grounding_verified: boolean
+}
+
 // Requests go through the Next.js API proxy (/api/coherence/...) so the browser
 // always uses a same-origin URL regardless of where the coherence service runs.
 const BASE_URL = "/api/coherence"
@@ -27,8 +33,21 @@ export const CoherenceService = {
     return apiFetch<Incoherence[]>(`/incoherences${qs ? `?${qs}` : ""}`)
   },
 
-  getIncoherence(id: string): Promise<Incoherence> {
-    return apiFetch<Incoherence>(`/incoherences/${encodeURIComponent(id)}`)
+  getIncoherence(id: string, domain: string): Promise<Incoherence> {
+    return apiFetch<Incoherence>(
+      `/incoherences/${encodeURIComponent(id)}?domain=${encodeURIComponent(domain)}`,
+    )
+  },
+
+  generateExplanation(
+    id: string,
+    domain: string,
+    rule_id: string,
+  ): Promise<ExplanationResponse> {
+    return apiFetch<ExplanationResponse>(`/incoherences/${encodeURIComponent(id)}/explain`, {
+      method: "POST",
+      body: JSON.stringify({ domain, rule_id }),
+    })
   },
 
   triggerVerification(req: VerificationRequest): Promise<VerificationResponse> {

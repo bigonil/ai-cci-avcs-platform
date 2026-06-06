@@ -19,15 +19,25 @@ log = structlog.get_logger(__name__)
 # Matches [source: anything] — chunk_id can contain alphanumeric, - and _
 _CITATION_RE = re.compile(r"\[source:\s*([A-Za-z0-9_\-]+)\]")
 
-# Sentence splitter: split after . ? ! followed by whitespace or end-of-string
-_SENTENCE_RE = re.compile(r"(?<=[.?!])\s+")
+# Common Italian/international corporate abbreviations whose period should NOT
+# trigger a sentence split (e.g. "S.p.A.", "s.r.l.", "Dr.", "Nr.").
+_ABBREV_PLACEHOLDER = "\x00ABBREV\x00"
+_ABBREV_RE = re.compile(
+    r"\b(?:[A-Za-z]\.){2,}"   # multi-part abbreviations: S.p.A., s.r.l., U.S.A., etc.
+    r"|\b(?:Dr|Mr|Mrs|Nr|Art|artt|cfr|ibid|op)\."  # single-word abbreviations
+)
 
-# Signals that a sentence contains a factual claim worth enforcing
+# Sentence splitter: split after . ? ! followed by whitespace, OR on bare newlines
+_SENTENCE_RE = re.compile(r"(?<=[.?!])\s+|\n+")
+
+# Signals that a sentence contains a factual claim worth enforcing.
+# The negative lookbehind (?<![A-Za-z_]) prevents matching digits inside
+# identifiers like "R001", "chunk_123", "C001", etc.
 _FACTUAL_SIGNAL_RE = re.compile(
-    r"(\d[\d.,]*"            # numeric value
-    r"|\d{4}-\d{2}-\d{2}"   # ISO date
-    r"|EUR|€"                # currency
-    r"|%)"                   # percentage
+    r"((?<![A-Za-z0-9_])\d[\d.,]*"  # numeric value NOT inside an identifier (e.g. not R001, chunk_123)
+    r"|\d{4}-\d{2}-\d{2}"           # ISO date (e.g. 2026-03-31)
+    r"|EUR|€"                        # currency
+    r"|%)"                           # percentage
 )
 
 
@@ -45,7 +55,11 @@ def enforce_citations(
     In strict mode raises GroundingError if any factual sentence lacks citations.
     Outside of tests, strict must always be True (CLAUDE.md §6 anti-patterns).
     """
-    sentences = _SENTENCE_RE.split(text.strip())
+    # Temporarily replace abbreviation periods so they don't cause false splits
+    protected = _ABBREV_RE.sub(lambda m: m.group().replace(".", _ABBREV_PLACEHOLDER), text.strip())
+    raw_sentences = _SENTENCE_RE.split(protected)
+    sentences = [s.replace(_ABBREV_PLACEHOLDER, ".") for s in raw_sentences]
+
     all_citations: list[str] = []
     sentences_without: list[str] = []
 

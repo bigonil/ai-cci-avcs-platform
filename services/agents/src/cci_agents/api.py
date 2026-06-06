@@ -39,6 +39,10 @@ class VerifyRequest(BaseModel):
     domain: str = Field(..., description="Ontology domain, e.g. 'hera_it'")
     as_of_date: str | None = Field(default=None, description="ISO date, defaults to today")
     correlation_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    rule_ids: list[str] | None = Field(
+        default=None,
+        description="If set, limits verification to these rule IDs (used for per-rule explanation)",
+    )
 
 
 class VerifyResponse(BaseModel):
@@ -57,6 +61,23 @@ class VerifyResponse(BaseModel):
     audit_seq: int | None
     errors: list[str]
     elapsed_ms: float
+
+
+class GenerateRequest(BaseModel):
+    """Direct generator invocation — skips planner/retriever/verifier (caller already has the data)."""
+
+    domain: str
+    violation: dict[str, Any] = Field(..., description="Single violation dict from coherence engine")
+    chunks: list[dict[str, Any]] = Field(default_factory=list, description="Evidence chunks (fixtures or Qdrant)")
+    as_of_date: str | None = None
+    correlation_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+
+
+class GenerateResponse(BaseModel):
+    text: str
+    citations: list[str]
+    grounding_verified: bool
+    errors: list[str]
 
 
 # ---------------------------------------------------------------------------
@@ -148,6 +169,7 @@ async def verify(req: VerifyRequest) -> VerifyResponse:
         "trigger": req.trigger,
         "domain": req.domain,
         "as_of_date": as_of,
+        "rule_ids_filter": req.rule_ids,
         "errors": [],
     }
 
@@ -192,6 +214,56 @@ async def verify(req: VerifyRequest) -> VerifyResponse:
         audit_seq=final_state.get("audit_seq"),
         errors=final_state.get("errors", []),
         elapsed_ms=elapsed_ms,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Direct generation endpoint (skips pipeline — caller already has violation data)
+# ---------------------------------------------------------------------------
+
+
+@app.post("/generate", response_model=GenerateResponse, status_code=status.HTTP_200_OK)
+async def generate(req: GenerateRequest) -> GenerateResponse:
+    """Call the generator node directly with pre-computed violation + chunks.
+
+    Used by the coherence service for per-rule explanation generation:
+    it already has the violation data and fixture chunks, so the full
+    planner→retriever→verifier pipeline is unnecessary.
+    """
+    if _settings is None:
+        raise HTTPException(status_code=503, detail="Settings not loaded")
+
+    from cci_agents.nodes.generator import generator_node
+    from cci_llm import LLMClient
+
+    llm = LLMClient(model=_settings.llm_model, max_tokens=_settings.llm_max_tokens)
+    as_of = req.as_of_date or date.today().isoformat()
+
+    state: dict[str, Any] = {
+        "correlation_id": req.correlation_id,
+        "trigger": f"Spiegazione regola {req.violation.get('rule_violated', '')}",
+        "domain": req.domain,
+        "as_of_date": as_of,
+        "chunks": req.chunks,
+        "violations": [req.violation],
+        "errors": [],
+    }
+
+    try:
+        result = await generator_node(
+            state,  # type: ignore[arg-type]
+            llm=llm,
+            prompts_path=_settings.prompts_path,
+        )
+    except Exception as exc:
+        log.error("generate_error", correlation_id=req.correlation_id, error=str(exc))
+        raise HTTPException(status_code=500, detail=f"Generator error: {exc}") from exc
+
+    return GenerateResponse(
+        text=result.get("report_text", ""),
+        citations=result.get("citations", []),
+        grounding_verified=result.get("grounding_verified", False),
+        errors=result.get("errors", []),
     )
 
 

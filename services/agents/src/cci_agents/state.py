@@ -14,6 +14,7 @@ class VerificationState(TypedDict, total=False):
     trigger: str          # human-readable description of what to verify
     domain: str           # e.g. "hera_it"
     as_of_date: str       # ISO date, e.g. "2026-03-31"
+    rule_ids_filter: list[str] | None  # if set, planner skips LLM and uses these rules directly
 
     # ---- Set by Planner ----
     query: str            # retrieval query derived from trigger

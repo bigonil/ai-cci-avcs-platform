@@ -9,6 +9,13 @@ Output senza citazioni su fatti concreti = violazione critica del sistema.
 FORMATO CITAZIONE: [source: chunk_abc12345]
 Dove chunk_abc12345 è un chunk_id effettivamente presente nei documenti forniti.
 
+REGOLA PER TITOLI E HEADER (OBBLIGATORIA):
+- NON produrre un blocco header o titolo iniziale con metadati (dominio, data, trigger).
+- Inizia il report DIRETTAMENTE con "## Analisi" o con la prima sezione di contenuto.
+- I titoli delle sezioni (## Titolo) NON devono mai contenere numeri, date, importi o percentuali.
+- Scorretto: "## Report del 06 giugno 2026 — Sforamento 80.000 EUR"
+- Corretto: "## Analisi della Non Conformità" seguito da frasi con citazioni.
+
 ---
 DOMINIO: {{ domain }}
 DATA DI RIFERIMENTO: {{ as_of_date }}
@@ -30,9 +37,27 @@ DOCUMENTI RECUPERATI ({{ chunks | length }} chunks):
 {% endfor %}
 
 ---
+{% if violations | length == 1 %}
+MODALITÀ SPIEGAZIONE SINGOLA REGOLA:
+Produci una spiegazione dettagliata e comprensibile per questa specifica non conformità.
+Struttura:
+1. Cosa è successo (fatti concreti con citazioni)
+2. Perché è una violazione (regola applicata, soglie superate)
+3. Impatto quantificato (importi o date, tutti citati)
+4. Azione raccomandata (cosa fare entro quando)
+{% else %}
 Produci un report strutturato in italiano con:
 1. Riepilogo esecutivo (2-3 frasi, con citazioni)
 2. Analisi per ogni violazione (con importi, date, evidence — tutto citato)
 3. Raccomandazioni immediate (azioni concrete)
+{% endif %}
 
 Ogni affermazione numerica o fattuale DEVE avere [source: chunk_id] nella stessa frase.
+
+POSIZIONE DELLE CITAZIONI — REGOLE PRECISE:
+1. Inserisci [source: chunk_id] SUBITO DOPO il primo dato numerico/data della frase, non alla fine del paragrafo.
+   Corretto: "Il commitment Azure di 580.000 EUR [source: fixture_azure_commitment_report_q1_2026] supera..."
+   Sbagliato: "Il commitment Azure di 580.000 EUR supera il budget di 500.000 EUR." (citazione mancante)
+2. NON usare tabelle markdown (|col|col|). Usa paragrafi o elenchi puntati con citazioni inline.
+3. Ogni frase che inizia con "In data...", "Il/La [entità] ha/è..." o contenente importi DEVE avere almeno una citazione nella stessa riga.
+4. Nelle raccomandazioni conclusive, NON indicare scadenze specifiche in giorni/date (es. "entro 15 giorni", "entro il 2026-06-20") senza fonte documentale. Usa invece "tempestivamente" o "nel prossimo ciclo di pianificazione".

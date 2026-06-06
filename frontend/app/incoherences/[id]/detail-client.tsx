@@ -3,6 +3,8 @@
 import Link from "next/link"
 import { useIncoherence } from "@/hooks/use-incoherences"
 import { ChunkCitation } from "@/components/chunk-citation"
+import { ExplanationBlock } from "@/components/explanation-block"
+import { GenerateExplanationButton } from "@/components/generate-explanation-button"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -10,7 +12,7 @@ import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { formatEur, formatDate, cn } from "@/lib/utils"
-import { ArrowLeft, AlertTriangle, Calendar, Building2, TrendingUp, FileText } from "lucide-react"
+import { ArrowLeft, AlertTriangle, Calendar, Building2, TrendingUp, FileText, Sparkles } from "lucide-react"
 import type { Severity } from "@/lib/api"
 
 const SEVERITY_CONFIG: Record<
@@ -208,24 +210,33 @@ export function IncoherenceDetailClient({ id }: { id: string }) {
         </Card>
       )}
 
-      {/* Explanation (requires Generator agent) */}
-      {data.explanation ? (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-semibold">Spiegazione con citazioni</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="rounded-lg bg-muted p-4 text-sm leading-relaxed whitespace-pre-wrap">
-              {data.explanation.text}
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <p className="text-xs text-muted-foreground rounded-lg border border-dashed p-3">
-          Spiegazione LLM non disponibile — richiede il Generator agent attivo.
-          I valori rilevati sono sufficienti per l&apos;analisi di conformità.
-        </p>
-      )}
+      {/* Explanation (Generator Agent — cache-first, on-demand generation) */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Sparkles className="size-4" />
+            Spiegazione con citazioni
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Analisi contestuale prodotta dal Generator Agent (grounding R3 verificato)
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {data.explanation ? (
+            <ExplanationBlock
+              text={data.explanation.text}
+              citations={data.explanation.citations}
+              groundingVerified={data.explanation.grounding_verified}
+            />
+          ) : (
+            <GenerateExplanationButton
+              incoherenceId={data.id}
+              domain={data.domain}
+              ruleId={data.rule_id}
+            />
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

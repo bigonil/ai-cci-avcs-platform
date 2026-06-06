@@ -17,6 +17,7 @@ export interface Incoherence {
   explanation?: {
     text: string
     citations: string[]
+    grounding_verified?: boolean
   }
 }
 

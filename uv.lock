@@ -274,6 +274,8 @@ source = { editable = "services/coherence" }
 dependencies = [
     { name = "cci-common" },
     { name = "fastapi" },
+    { name = "httpx" },
+    { name = "motor" },
     { name = "neo4j" },
     { name = "prometheus-fastapi-instrumentator" },
     { name = "pydantic" },
@@ -297,7 +299,9 @@ requires-dist = [
     { name = "cci-common", editable = "libs/cci-common" },
     { name = "coverage", marker = "extra == 'test'", specifier = ">=7.5" },
     { name = "fastapi", specifier = ">=0.111" },
+    { name = "httpx", specifier = ">=0.27" },
     { name = "httpx", marker = "extra == 'test'", specifier = ">=0.27" },
+    { name = "motor", specifier = ">=3.4" },
     { name = "neo4j", specifier = ">=5.20" },
     { name = "prometheus-fastapi-instrumentator", specifier = ">=7.0" },
     { name = "pydantic", specifier = ">=2.7" },

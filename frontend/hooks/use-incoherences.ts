@@ -16,13 +16,21 @@ export function useIncoherence(id: string) {
   return useQuery({
     queryKey: ["incoherence", id],
     queryFn: async (): Promise<Incoherence> => {
-      // Look up in any cached list query first to avoid a round-trip
+      // Find domain from any cached list — needed for the single-item endpoint
+      let domain: string | undefined
       const caches = qc.getQueriesData<Incoherence[]>({ queryKey: ["incoherences"] })
       for (const [, data] of caches) {
         const hit = data?.find((inc) => inc.id === id)
-        if (hit) return hit
+        if (hit) { domain = hit.domain; break }
       }
-      // Not in cache: fetch full list and find by id
+
+      if (domain) {
+        // Fetch single item: includes cached explanation if previously generated
+        return CoherenceService.getIncoherence(id, domain)
+      }
+
+      // Cold load (no list cache): fetch with hera_it as fallback domain
+      // The user will have navigated from the list in normal usage
       const list = await CoherenceService.listIncoherences({ domain: "hera_it", limit: 200 })
       const found = list.find((inc) => inc.id === id)
       if (!found) throw new Error("Incoherence not found")
