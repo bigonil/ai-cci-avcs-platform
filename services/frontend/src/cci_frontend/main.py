@@ -2,6 +2,7 @@ import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
+import httpx
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -14,7 +15,9 @@ DIST_DIR = Path(os.getenv("FRONTEND_DIST_DIR", "/app/dist"))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    app.state.http_client = httpx.AsyncClient(timeout=30.0)
     yield
+    await app.state.http_client.aclose()
 
 
 app = FastAPI(title="CCI/AVCS Frontend BFF", version="0.1.0", lifespan=lifespan)

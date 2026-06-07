@@ -6,7 +6,8 @@ FROM python:3.12-slim AS runtime
 WORKDIR /app
 RUN pip install uv --no-cache-dir
 COPY services/frontend/pyproject.toml ./
-RUN uv pip install --system --no-cache .
+COPY uv.lock ./
+RUN uv sync --frozen --system --no-cache
 COPY services/frontend/src ./src
 ENV PYTHONPATH=/app/src
 EXPOSE 8080

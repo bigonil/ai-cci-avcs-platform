@@ -22,6 +22,7 @@ members = [
     "cci-agents",
     "cci-coherence",
     "cci-common",
+    "cci-frontend",
     "cci-governance",
     "cci-ingestion",
     "cci-knowledge",
@@ -348,6 +349,36 @@ requires-dist = [
     { name = "structlog", specifier = ">=24.1" },
 ]
 provides-extras = ["test"]
+
+[[package]]
+name = "cci-frontend"
+version = "0.1.0"
+source = { editable = "services/frontend" }
+dependencies = [
+    { name = "aiofiles" },
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "httpx" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aiofiles", specifier = ">=24.1" },
+    { name = "fastapi", specifier = ">=0.115" },
+    { name = "httpx", specifier = ">=0.27" },
+    { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.27" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.24" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.32" },
+]
+provides-extras = ["dev"]
 
 [[package]]
 name = "cci-governance"

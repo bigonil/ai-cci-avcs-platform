@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock
 from fastapi.testclient import TestClient
 from cci_frontend.main import app
 
@@ -14,13 +14,15 @@ def _mock_response(status_code: int = 200, content: bytes = b'{"ok": true}'):
     return resp
 
 
-@patch("cci_frontend.proxy.httpx.AsyncClient")
-def test_proxy_incoherences_list(mock_client_cls):
+def _make_mock_http_client():
     mock_client = AsyncMock()
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=False)
     mock_client.request = AsyncMock(return_value=_mock_response())
-    mock_client_cls.return_value = mock_client
+    return mock_client
+
+
+def test_proxy_incoherences_list():
+    mock_client = _make_mock_http_client()
+    app.state.http_client = mock_client
 
     resp = client.get("/api/incoherences?domain=hera_it")
     assert resp.status_code == 200
@@ -29,13 +31,9 @@ def test_proxy_incoherences_list(mock_client_cls):
     assert "domain=hera_it" in call_args.kwargs["url"]
 
 
-@patch("cci_frontend.proxy.httpx.AsyncClient")
-def test_proxy_incoherence_explain(mock_client_cls):
-    mock_client = AsyncMock()
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=False)
-    mock_client.request = AsyncMock(return_value=_mock_response())
-    mock_client_cls.return_value = mock_client
+def test_proxy_incoherence_explain():
+    mock_client = _make_mock_http_client()
+    app.state.http_client = mock_client
 
     resp = client.post("/api/incoherences/abc123/explain")
     assert resp.status_code == 200
@@ -43,13 +41,9 @@ def test_proxy_incoherence_explain(mock_client_cls):
     assert "abc123/explain" in call_args.kwargs["url"]
 
 
-@patch("cci_frontend.proxy.httpx.AsyncClient")
-def test_proxy_hitl_routes_to_governance(mock_client_cls):
-    mock_client = AsyncMock()
-    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
-    mock_client.__aexit__ = AsyncMock(return_value=False)
-    mock_client.request = AsyncMock(return_value=_mock_response())
-    mock_client_cls.return_value = mock_client
+def test_proxy_hitl_routes_to_governance():
+    mock_client = _make_mock_http_client()
+    app.state.http_client = mock_client
 
     resp = client.get("/api/hitl/queue")
     assert resp.status_code == 200

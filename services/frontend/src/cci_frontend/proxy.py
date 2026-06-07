@@ -26,18 +26,18 @@ async def proxy(path: str, request: Request) -> Response:
     skip_headers = {"host", "content-length", "transfer-encoding"}
     headers = {k: v for k, v in request.headers.items() if k.lower() not in skip_headers}
 
+    client: httpx.AsyncClient = request.app.state.http_client
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            upstream_resp = await client.request(
-                method=request.method,
-                url=url,
-                headers=headers,
-                content=body,
-            )
+        upstream_resp = await client.request(
+            method=request.method,
+            url=url,
+            headers=headers,
+            content=body,
+        )
     except httpx.TimeoutException:
         raise HTTPException(status_code=504, detail="Upstream timeout")
-    except httpx.ConnectError:
-        raise HTTPException(status_code=502, detail="Upstream unreachable")
+    except httpx.RequestError as exc:
+        raise HTTPException(status_code=502, detail=f"Upstream error: {type(exc).__name__}")
 
     return Response(
         content=upstream_resp.content,
