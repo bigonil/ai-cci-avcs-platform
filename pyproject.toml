@@ -18,6 +18,7 @@ members = [
     "services/retrieval",
     "services/coherence",
     "services/agents",
+    "services/frontend",
     "services/governance",
 ]
 
