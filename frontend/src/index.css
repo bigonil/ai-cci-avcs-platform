@@ -1,0 +1,36 @@
+/* frontend/src/index.css */
+@import "tailwindcss";
+
+:root {
+  --sidebar-width: 220px;
+  --sidebar-bg: rgba(10, 8, 28, 0.8);
+  --sidebar-border: rgba(129, 140, 248, 0.12);
+  --card-bg: rgba(255, 255, 255, 0.04);
+  --card-border: rgba(255, 255, 255, 0.08);
+  --color-primary: #818cf8;
+  --color-primary-dim: #a78bfa;
+  --color-critical: #ef4444;
+  --color-high: #f97316;
+  --color-medium: #f59e0b;
+  --color-ok: #22c55e;
+  --text-primary: #f1f5f9;
+  --text-secondary: rgba(165, 180, 252, 0.6);
+  --text-dim: rgba(165, 180, 252, 0.35);
+  --gradient-bg: linear-gradient(160deg, #0d0b1e 0%, #1a1535 40%, #0d1a2e 100%);
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  background: var(--gradient-bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(129, 140, 248, 0.2); border-radius: 2px; }
