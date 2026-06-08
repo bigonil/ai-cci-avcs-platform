@@ -1,11 +1,12 @@
 // frontend/src/components/sidebar.tsx
 import { NavLink } from 'react-router-dom'
+import type { ReactNode } from 'react'
 import { LayoutDashboard, AlertTriangle, ClipboardList, ShieldCheck } from 'lucide-react'
 
 interface NavItem {
   path: string
   label: string
-  icon: React.ReactNode
+  icon: ReactNode
   badge?: number
   badgeColor?: string
 }
@@ -63,7 +64,7 @@ export function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav style={{ padding: '16px 8px 0', flex: 1 }}>
+      <nav aria-label="Navigazione principale" style={{ padding: '16px 8px 0', flex: 1 }}>
         <div style={{ fontSize: 9, color: 'var(--text-dim)', letterSpacing: '1.5px', textTransform: 'uppercase', padding: '0 8px 6px' }}>Navigazione</div>
         {NAV_ITEMS.map((item) => (
           <NavLink
