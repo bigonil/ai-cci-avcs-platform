@@ -354,15 +354,14 @@ services:
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/frontend/Dockerfile
     environment:
       COHERENCE_SERVICE_URL: http://coherence:8003
       GOVERNANCE_SERVICE_URL: http://governance:8005
-      NEXT_PUBLIC_APP_NAME: "CCI/AVCS"
-      NEXT_PUBLIC_ENV: production
+      FRONTEND_DIST_DIR: /app/dist
     ports:
-      - "3000:3000"
+      - "8080:8080"
     networks:
       - cci-backend
       - cci-frontend
@@ -372,16 +371,10 @@ services:
       governance:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000 > /dev/null 2>&1 || exit 1"]
-      interval: 15s
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health/live')\""]
+      interval: 30s
       timeout: 5s
-      retries: 5
-      start_period: 30s
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 224M
+      retries: 3
 
   # --- Observability (opt-in: docker compose --profile observability up) ------
   # These three services add ~304 MB to the stack total.

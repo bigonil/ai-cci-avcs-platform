@@ -3,23 +3,32 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
-    command: ["pnpm", "dev"]
     volumes:
-      - ./frontend:/app
-      - frontend_node_modules:/app/node_modules
-      - frontend_next:/app/.next
+      - ./frontend/src:/app/src
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.ts:/app/vite.config.ts
     environment:
-      NODE_ENV: development
-      NEXT_TELEMETRY_DISABLED: "1"
+      VITE_API_BASE_URL: http://localhost:8080
+    ports:
+      - "5173:5173"
+    networks:
+      - cci-frontend
+
+  frontend-bff:
+    build:
+      context: .
+      dockerfile: services/frontend/Dockerfile
+      target: runtime
+    environment:
       COHERENCE_SERVICE_URL: http://coherence:8003
       GOVERNANCE_SERVICE_URL: http://governance:8005
-      NEXT_PUBLIC_APP_NAME: "CCI/AVCS"
-      NEXT_PUBLIC_ENV: development
-    deploy:
-      resources:
-        limits:
-          memory: 1500M
-
-volumes:
-  frontend_node_modules:
-  frontend_next:
+    ports:
+      - "8080:8080"
+    networks:
+      - cci-backend
+      - cci-frontend
+    depends_on:
+      coherence:
+        condition: service_healthy
+      governance:
+        condition: service_healthy

@@ -64,7 +64,7 @@ up: ## Avvia stack core (≤ 2.65 GB RAM, senza observability)
 	@sleep 5
 	$(COMPOSE) ps
 
-up-dev: ## Avvia stack con frontend in hot-reload (Next.js dev + Turbopack, HMR)
+up-dev: ## Avvia stack con frontend in hot-reload (Vite HMR su :5173, BFF su :8080)
 	$(COMPOSE) -f docker-compose.yml -f docker-compose.dev.yml up -d
 
 up-obs: ## Avvia stack core + observability (≤ 2.95 GB RAM — Prometheus, Grafana, Tempo)
