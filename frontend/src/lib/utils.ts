@@ -29,5 +29,5 @@ export const SEVERITY_CONFIG: Record<Severity, { color: string; barColor: string
 }
 
 export function severityColor(severity: Severity): string {
-  return SEVERITY_CONFIG[severity].color
+  return SEVERITY_CONFIG[severity]!.color
 }
