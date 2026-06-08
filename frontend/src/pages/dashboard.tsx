@@ -14,7 +14,7 @@ export function Dashboard() {
     ? incoData
     : (incoData?.items ?? [])
 
-  const incoCount = incoList.length
+  const incoCount = Array.isArray(incoData) ? incoData.length : (incoData?.total ?? 0)
   const hitlCount = hitlData?.length ?? 0
   const auditOk = auditData?.valid ?? true
 

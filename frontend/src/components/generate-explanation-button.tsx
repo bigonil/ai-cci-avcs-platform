@@ -41,7 +41,7 @@ export function GenerateExplanationButton({ onGenerate, isPending }: GenerateExp
       >
         {isPending ? (
           <>
-            <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+            <Loader2 size={14} className="animate-spin" />
             Generazione in corso…
           </>
         ) : (
@@ -51,7 +51,6 @@ export function GenerateExplanationButton({ onGenerate, isPending }: GenerateExp
           </>
         )}
       </button>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }

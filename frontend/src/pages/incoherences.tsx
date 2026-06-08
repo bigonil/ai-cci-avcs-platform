@@ -39,6 +39,7 @@ export function Incoherences() {
 
         {/* Filtro */}
         <select
+          aria-label="Filtra per severity"
           value={severity}
           onChange={(e) => setSeverity(e.target.value)}
           style={{
