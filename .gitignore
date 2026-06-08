@@ -40,3 +40,12 @@ Thumbs.db
 
 # Demo output
 demo_output/
+
+# Test coverage reports
+frontend/coverage/
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# Superpowers plugin state
+.superpowers/
