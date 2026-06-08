@@ -32,6 +32,7 @@ export function HitlAction() {
     })
   }
 
+  if (!actionId) return <div style={{ color: 'var(--text-secondary)' }}>ID azione non valido.</div>
   if (isLoading) return <div className="animate-pulse" style={{ height: 200, background: 'var(--card-bg)', borderRadius: 10 }} />
   if (!action) return <div style={{ color: 'var(--text-secondary)' }}>Azione non trovata.</div>
 
