@@ -10,7 +10,7 @@ const SEVERITY_STYLE: Record<Severity, { borderColor: string; badgeBg: string; b
 }
 
 export function IncoherenceCard({ incoherence }: { incoherence: Incoherence }) {
-  const style = SEVERITY_STYLE[incoherence.severity]
+  const style = SEVERITY_STYLE[incoherence.severity]!
 
   return (
     <Link
